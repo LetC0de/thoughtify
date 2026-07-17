@@ -41,3 +41,17 @@ def update_thought(body: thought_schema,thought_id:int,db:Session):
     db.refresh(thought)
 
     return thought
+
+
+
+
+def delete_thought(thought_id:int,db:Session):
+    thought = db.query(thought_model).get(thought_id)
+
+    if not thought:
+        raise HTTPException(status_code=404,detail="Thought not found")
+
+    db.delete(thought)
+    db.commit()
+
+    return {"message":"Thought deleted Successfully"}

@@ -21,3 +21,9 @@ def get_all_thought(db=Depends(get_db)):
 @thought_router.put("/update/{thought_id}",status_code=status.HTTP_201_CREATED)
 def update_thought(body:thought_schema,thought_id:int,db=Depends(get_db)):
     return controller.update_thought(body,thought_id,db)
+
+
+
+@thought_router.delete("/delete/{thought_id}",status_code=status.HTTP_200_OK)
+def delete_thought(thought_id:int,db=Depends(get_db)):
+    return controller.delete_thought(thought_id,db)
