@@ -15,12 +15,13 @@ def create_thought(body: thought_schema,db:Session):
     db.refresh(new_thought)
 
 
-    return {"message": "Thought created Successfully","data":new_thought}
+    return new_thought
 
 
 
 def get_all_thought(db:Session):
-    return db.query(thought_model).all()
+    thoughts = db.query(thought_model).all()
+    return thoughts
 
 
 
