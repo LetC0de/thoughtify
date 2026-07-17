@@ -15,3 +15,9 @@ def create_thought(body:thought_schema,db=Depends(get_db)):
 @thought_router.get("/all_thought",status_code=status.HTTP_200_OK)
 def get_all_thought(db=Depends(get_db)):
     return controller.get_all_thought(db)
+
+
+
+@thought_router.put("/update/{thought_id}",status_code=status.HTTP_201_CREATED)
+def update_thought(body:thought_schema,thought_id:int,db=Depends(get_db)):
+    return controller.update_thought(body,thought_id,db)
