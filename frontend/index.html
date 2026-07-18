@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thoughtify — Share Your Thoughts</title>
+  <meta name="description" content="A warm, beautiful space to share and explore thoughts." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Ambient glow effects -->
+  <div class="ambient-glow" aria-hidden="true"></div>
+  <div class="ambient-glow ambient-glow--bottom" aria-hidden="true"></div>
+
+  <!-- ═══ Header ═══ -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <a href="/" class="logo" aria-label="Thoughtify home">
+        <span class="logo-icon" aria-hidden="true">✦</span>
+        <span class="logo-text">Thought<span>ify</span></span>
+      </a>
+      <span class="header-tagline">A space for ideas</span>
+    </div>
+  </header>
+
+  <!-- ═══ Main Content ═══ -->
+  <main class="main" role="main">
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+      <div class="hero-ornament" aria-hidden="true">✦ ✦ ✦</div>
+      <h1 class="hero-title">Share a <span>Thought</span></h1>
+      <p class="hero-sub">
+        A quiet corner of the internet to capture ideas, musings, and moments —
+        because every thought deserves a place.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-number" id="thoughtCount">0</div>
+          <div class="hero-stat-label">Thoughts Shared</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-number">✦</div>
+          <div class="hero-stat-label">Open &amp; Free</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-number">∞</div>
+          <div class="hero-stat-label">Possibilities</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Divider ── -->
+    <div class="divider" aria-hidden="true">
+      <span class="divider-line"></span>
+      <span class="divider-ornament">◈</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <!-- ── New Thought Form ── -->
+    <section id="formWrap" class="thought-form-wrap">
+      <div class="section-header">
+        <h2 class="section-title">Add a <span>Thought</span></h2>
+      </div>
+
+      <form class="thought-form" id="thoughtForm" novalidate>
+        <div class="form-group">
+          <label for="thoughtTitle" class="form-label">Title</label>
+          <input
+            type="text"
+            id="thoughtTitle"
+            class="form-input"
+            placeholder="What's on your mind?"
+            required
+            autocomplete="off"
+            maxlength="200"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="thoughtContent" class="form-label">Thought</label>
+          <textarea
+            id="thoughtContent"
+            class="form-textarea"
+            placeholder="Write freely. No judgment, no filters — just your voice."
+            required
+            maxlength="5000"
+          ></textarea>
+        </div>
+
+        <div class="form-footer">
+          <span class="form-hint">
+            <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit
+          </span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              id="cancelEditBtn"
+              style="display: none;"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              <span id="submitSpinner" class="spinner" style="display: none;"></span>
+              <span id="submitBtnText">Share Thought</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── All Thoughts ── -->
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">All <span>Thoughts</span></h2>
+        <span class="section-count" id="totalCount">0</span>
+      </div>
+
+      <!-- Skeleton loader -->
+      <div class="skeleton-grid" id="skeletonGrid" style="display: none;">
+        <div class="skeleton-card">
+          <div class="skeleton-line skeleton-line--short"></div>
+          <div class="skeleton-line skeleton-line--long"></div>
+          <div class="skeleton-line skeleton-line--medium"></div>
+          <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton-line skeleton-line--short"></div>
+          <div class="skeleton-line skeleton-line--long"></div>
+          <div class="skeleton-line skeleton-line--medium"></div>
+          <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton-line skeleton-line--short"></div>
+          <div class="skeleton-line skeleton-line--long"></div>
+          <div class="skeleton-line skeleton-line--medium"></div>
+          <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state-icon">💭</div>
+        <h3 class="empty-state-title">No Thoughts Yet</h3>
+        <p class="empty-state-text">
+          The garden of ideas is empty. Be the first to plant a thought.
+        </p>
+      </div>
+
+      <!-- Thoughts grid -->
+      <div class="thoughts-grid" id="thoughtsGrid" role="list"></div>
+    </section>
+
+    <!-- ── Footer ornament ── -->
+    <div class="ornamental-border" aria-hidden="true">
+      <span class="line"></span>
+      <span>✦ ◈ ✦</span>
+      <span class="line"></span>
+    </div>
+
+  </main>
+
+  <!-- ═══ Delete Confirmation Modal ═══ -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h3 class="modal-title" id="modalTitle">Confirm</h3>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modalCancel">Cancel</button>
+        <button class="btn btn-danger" id="modalConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Toast Container ═══ -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- ═══ Scripts ═══ -->
+  <script src="app.js"></script>
+</body>
+</html>
