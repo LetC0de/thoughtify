@@ -32,7 +32,7 @@ async def register_user(body: UserSchema, db: Session, bg_task:BackgroundTasks):
 
     hashed_password = get_password_hash(body.password)
 
-    new_user = UserSchema(
+    new_user = UserModel(
         name=body.name,
         username=body.username,
         password=hashed_password,
@@ -66,7 +66,7 @@ def login_user(body:UserLoginSchema, db:Session):
         "exp": exp_time.timestamp()
     }, settings.SECRET_KEY,settings.ALGORITHM)
 
-    return {"token": token, "user": user}
+    return {"token": token}
 
 
 

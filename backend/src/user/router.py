@@ -14,7 +14,7 @@ async def register_user(body: UserSchema,bg_task:BackgroundTasks, db: Session = 
     return await controller.register_user(body, db, bg_task)
 
 
-@user_router.post("/login", response_model=UserResponseSchema, status_code=status.HTTP_200_OK)
+@user_router.post("/login",status_code=status.HTTP_200_OK)
 def login_user(body:UserLoginSchema, db:Session = Depends(get_db)):
     return controller.login_user(body, db)
 
@@ -22,3 +22,4 @@ def login_user(body:UserLoginSchema, db:Session = Depends(get_db)):
 @user_router.get("/is_auth",response_model=UserResponseSchema, status_code=status.HTTP_200_OK)
 def is_authenticated(request:Request, db:Session = Depends(get_db)):
     return controller.is_authenticated(request, db)
+    
