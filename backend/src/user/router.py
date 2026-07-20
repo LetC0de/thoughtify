@@ -1,7 +1,7 @@
+from src.user.schema import UserSchema, UserResponseSchema, UserLoginSchema
 from fastapi import APIRouter, Depends,status, Request
 from sqlalchemy.orm import Session
 from src.user import controller
-from src.user.schema import UserSchema, UserResponseSchema, UserLoginSchema
 from src.utils.db import get_db
 
 
