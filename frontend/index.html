@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thoughtify — Share Your Thoughts</title>
-  <meta name="description" content="A warm, beautiful space to share and explore thoughts." />
+  <title>Thoughtify — A Sanctuary for Ideas</title>
+  <meta name="description" content="A warm, intimate space to capture and nurture your thoughts." />
 
-  <!-- Fonts -->
+  <!-- Fonts: Playfair Display (display), DM Sans (body), JetBrains Mono (code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
@@ -15,158 +15,284 @@
 </head>
 <body>
 
-  <!-- Ambient glow effects -->
-  <div class="ambient-glow" aria-hidden="true"></div>
+  <!-- ═══ Grain Noise Overlay (CSS pseudo-elements) ═══ -->
+
+  <!-- ═══ Ambient Glows ═══ -->
+  <div class="ambient-glow ambient-glow--top" aria-hidden="true"></div>
   <div class="ambient-glow ambient-glow--bottom" aria-hidden="true"></div>
+  <div class="ambient-glow ambient-glow--auth" aria-hidden="true"></div>
 
-  <!-- ═══ Header ═══ -->
-  <header class="header" role="banner">
-    <div class="header-inner">
-      <a href="/" class="logo" aria-label="Thoughtify home">
-        <span class="logo-icon" aria-hidden="true">✦</span>
-        <span class="logo-text">Thought<span>ify</span></span>
-      </a>
-      <span class="header-tagline">A space for ideas</span>
+  <!-- ═══ Loading Overlay ═══ -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="loading-logo">✦</div>
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Thoughtify</p>
     </div>
-  </header>
+  </div>
 
-  <!-- ═══ Main Content ═══ -->
-  <main class="main" role="main">
+  <!-- ════════════════════════════════════════════════
+       AUTH VIEW (Login / Register)
+       ════════════════════════════════════════════════ -->
+  <div class="auth-view" id="authView" style="display: none;">
+    <div class="auth-backdrop" aria-hidden="true"></div>
 
-    <!-- ── Hero ── -->
-    <section class="hero">
-      <div class="hero-ornament" aria-hidden="true">✦ ✦ ✦</div>
-      <h1 class="hero-title">Share a <span>Thought</span></h1>
-      <p class="hero-sub">
-        A quiet corner of the internet to capture ideas, musings, and moments —
-        because every thought deserves a place.
-      </p>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-number" id="thoughtCount">0</div>
-          <div class="hero-stat-label">Thoughts Shared</div>
+    <div class="auth-container">
+      <div class="auth-card" id="authCard">
+
+        <!-- Logo -->
+        <a href="/" class="auth-logo" aria-label="Thoughtify home">
+          <span class="auth-logo-icon" aria-hidden="true">✦</span>
+          <span class="auth-logo-text">Thought<span>ify</span></span>
+        </a>
+
+        <!-- Tabs -->
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" data-tab="login" role="tab" aria-selected="true" id="tabLogin">Sign In</button>
+          <button class="auth-tab" data-tab="register" role="tab" aria-selected="false" id="tabRegister">Create Account</button>
         </div>
-        <div class="hero-stat">
-          <div class="hero-stat-number">✦</div>
-          <div class="hero-stat-label">Open &amp; Free</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-number">∞</div>
-          <div class="hero-stat-label">Possibilities</div>
-        </div>
+
+        <!-- ── Login Form ── -->
+        <form class="auth-form active" id="loginForm" novalidate autocomplete="off">
+          <div class="form-group">
+            <label for="loginUsername" class="form-label">Username</label>
+            <input type="text" id="loginUsername" class="form-input" placeholder="Your username" required autocomplete="username" />
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword" class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+          </div>
+
+          <div class="auth-error" id="loginError" role="alert"></div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+            <span class="btn-spinner" id="loginSpinner" style="display: none;"></span>
+            <span id="loginBtnText">Sign In</span>
+          </button>
+
+          <p class="auth-alt">
+            Don't have an account?
+            <button type="button" class="btn-link" data-switch="register">Create one</button>
+          </p>
+        </form>
+
+        <!-- ── Register Form ── -->
+        <form class="auth-form" id="registerForm" novalidate autocomplete="off">
+          <div class="form-group">
+            <label for="regName" class="form-label">Name</label>
+            <input type="text" id="regName" class="form-input" placeholder="Your name" required autocomplete="name" />
+          </div>
+
+          <div class="form-group">
+            <label for="regUsername" class="form-label">Username</label>
+            <input type="text" id="regUsername" class="form-input" placeholder="Choose a username" required autocomplete="username" />
+          </div>
+
+          <div class="form-group">
+            <label for="regEmail" class="form-label">Email</label>
+            <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" required autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label for="regPassword" class="form-label">Password</label>
+            <input type="password" id="regPassword" class="form-input" placeholder="Create a strong password" required autocomplete="new-password" />
+          </div>
+
+          <div class="auth-error" id="registerError" role="alert"></div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="registerBtn">
+            <span class="btn-spinner" id="registerSpinner" style="display: none;"></span>
+            <span id="registerBtnText">Create Account</span>
+          </button>
+
+          <p class="auth-alt">
+            Already have an account?
+            <button type="button" class="btn-link" data-switch="login">Sign in</button>
+          </p>
+        </form>
+
       </div>
-    </section>
-
-    <!-- ── Divider ── -->
-    <div class="divider" aria-hidden="true">
-      <span class="divider-line"></span>
-      <span class="divider-ornament">◈</span>
-      <span class="divider-line"></span>
     </div>
+  </div>
 
-    <!-- ── New Thought Form ── -->
-    <section id="formWrap" class="thought-form-wrap">
-      <div class="section-header">
-        <h2 class="section-title">Add a <span>Thought</span></h2>
-      </div>
+  <!-- ════════════════════════════════════════════════
+       APP VIEW (Dashboard — after login)
+       ════════════════════════════════════════════════ -->
+  <div class="app-view" id="appView" style="display: none;">
+    <div class="app-view-inner">
 
-      <form class="thought-form" id="thoughtForm" novalidate>
-        <div class="form-group">
-          <label for="thoughtTitle" class="form-label">Title</label>
-          <input
-            type="text"
-            id="thoughtTitle"
-            class="form-input"
-            placeholder="What's on your mind?"
-            required
-            autocomplete="off"
-            maxlength="200"
-          />
-        </div>
+      <!-- ── Header ── -->
+      <header class="app-header" role="banner">
+        <div class="header-inner">
+          <a href="/" class="logo" aria-label="Thoughtify home">
+            <span class="logo-icon" aria-hidden="true">✦</span>
+            <span class="logo-text">Thought<span>ify</span></span>
+          </a>
 
-        <div class="form-group">
-          <label for="thoughtContent" class="form-label">Thought</label>
-          <textarea
-            id="thoughtContent"
-            class="form-textarea"
-            placeholder="Write freely. No judgment, no filters — just your voice."
-            required
-            maxlength="5000"
-          ></textarea>
-        </div>
-
-        <div class="form-footer">
-          <span class="form-hint">
-            <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit
-          </span>
-          <div style="display: flex; gap: 0.5rem;">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              id="cancelEditBtn"
-              style="display: none;"
-            >
-              Cancel
-            </button>
-            <button type="submit" class="btn btn-primary" id="submitBtn">
-              <span id="submitSpinner" class="spinner" style="display: none;"></span>
-              <span id="submitBtnText">Share Thought</span>
+          <div class="header-user" id="headerUser">
+            <span class="header-greeting" id="headerGreeting">Hello</span>
+            <div class="user-avatar" id="userAvatar">A</div>
+            <button class="btn btn-ghost btn-logout" id="logoutBtn" title="Sign out" aria-label="Sign out">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span class="logout-label">Sign out</span>
             </button>
           </div>
         </div>
-      </form>
-    </section>
+      </header>
 
-    <!-- ── All Thoughts ── -->
-    <section>
-      <div class="section-header">
-        <h2 class="section-title">All <span>Thoughts</span></h2>
-        <span class="section-count" id="totalCount">0</span>
-      </div>
+      <!-- ── Main Content ── -->
+      <main class="main" role="main">
 
-      <!-- Skeleton loader -->
-      <div class="skeleton-grid" id="skeletonGrid" style="display: none;">
-        <div class="skeleton-card">
-          <div class="skeleton-line skeleton-line--short"></div>
-          <div class="skeleton-line skeleton-line--long"></div>
-          <div class="skeleton-line skeleton-line--medium"></div>
-          <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+        <!-- ── Stats Bar ── -->
+        <section class="stats-bar" id="statsBar">
+          <div class="stat-item">
+            <span class="stat-number" id="statCount">0</span>
+            <span class="stat-label">Thoughts</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-number">✦</span>
+            <span class="stat-label">Yours</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-number">∞</span>
+            <span class="stat-label">Ideas</span>
+          </div>
+        </section>
+
+        <!-- ── Divider ── -->
+        <div class="divider" aria-hidden="true">
+          <span class="divider-line"></span>
+          <span class="divider-ornament">◈</span>
+          <span class="divider-line"></span>
         </div>
-        <div class="skeleton-card">
-          <div class="skeleton-line skeleton-line--short"></div>
-          <div class="skeleton-line skeleton-line--long"></div>
-          <div class="skeleton-line skeleton-line--medium"></div>
-          <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+
+        <!-- ── Thought Form ── -->
+        <section class="thought-form-section" id="formSection">
+          <div class="section-header">
+            <h2 class="section-title" id="formTitle">Capture a <span>Thought</span></h2>
+            <button class="btn btn-ghost btn-collapse" id="collapseFormBtn" aria-label="Toggle form" title="Toggle form">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="collapseIcon"><polyline points="18 15 12 9 6 15"/></polyline></svg>
+            </button>
+          </div>
+
+          <div class="thought-form-wrap" id="formWrap">
+            <form class="thought-form" id="thoughtForm" novalidate>
+              <div class="form-group">
+                <label for="thoughtTitle" class="form-label">Title</label>
+                <input
+                  type="text"
+                  id="thoughtTitle"
+                  class="form-input"
+                  placeholder="What's on your mind?"
+                  required
+                  autocomplete="off"
+                  maxlength="200"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="thoughtContent" class="form-label">Thought</label>
+                <textarea
+                  id="thoughtContent"
+                  class="form-textarea"
+                  placeholder="Write freely. No judgment, no filters — just your voice."
+                  required
+                  maxlength="5000"
+                ></textarea>
+              </div>
+
+              <div class="form-footer">
+                <span class="form-hint">
+                  <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit
+                </span>
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancelEditBtn"
+                    style="display: none;"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span class="btn-spinner" id="submitSpinner" style="display: none;"></span>
+                    <span id="submitBtnText">Share Thought</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ── Thoughts Section ── -->
+        <section class="thoughts-section" id="thoughtsSection">
+          <div class="section-header">
+            <h2 class="section-title">Your <span>Thoughts</span></h2>
+            <span class="section-count" id="totalCount">0</span>
+          </div>
+
+          <!-- Skeleton loader -->
+          <div class="skeleton-grid" id="skeletonGrid" style="display: none;">
+            <div class="skeleton-card">
+              <div class="skeleton-line skeleton-line--short"></div>
+              <div class="skeleton-line skeleton-line--long"></div>
+              <div class="skeleton-line skeleton-line--medium"></div>
+              <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-line skeleton-line--short"></div>
+              <div class="skeleton-line skeleton-line--long"></div>
+              <div class="skeleton-line skeleton-line--medium"></div>
+              <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-line skeleton-line--short"></div>
+              <div class="skeleton-line skeleton-line--long"></div>
+              <div class="skeleton-line skeleton-line--medium"></div>
+              <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">💭</div>
+            <h3 class="empty-state-title">No Thoughts Yet</h3>
+            <p class="empty-state-text">
+              Your mind is a quiet garden. Plant your first thought above.
+            </p>
+            <button class="btn btn-primary" id="emptyStateBtn">
+              Write Your First Thought
+            </button>
+          </div>
+
+          <!-- Error state -->
+          <div class="error-state" id="errorState" style="display: none;">
+            <div class="error-state-icon">⚠</div>
+            <h3 class="error-state-title">Connection Lost</h3>
+            <p class="error-state-text">
+              Couldn't reach the server. Make sure your backend is running.
+            </p>
+            <button class="btn btn-secondary" id="retryBtn">Try Again</button>
+          </div>
+
+          <!-- Thoughts grid container -->
+          <div class="thoughts-grid" id="thoughtsGrid" role="list"></div>
+        </section>
+
+        <!-- ── Footer ornament ── -->
+        <div class="ornamental-border" aria-hidden="true">
+          <span class="line"></span>
+          <span>✦ ◈ ✦</span>
+          <span class="line"></span>
         </div>
-        <div class="skeleton-card">
-          <div class="skeleton-line skeleton-line--short"></div>
-          <div class="skeleton-line skeleton-line--long"></div>
-          <div class="skeleton-line skeleton-line--medium"></div>
-          <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
-        </div>
-      </div>
 
-      <!-- Empty state -->
-      <div class="empty-state" id="emptyState" style="display: none;">
-        <div class="empty-state-icon">💭</div>
-        <h3 class="empty-state-title">No Thoughts Yet</h3>
-        <p class="empty-state-text">
-          The garden of ideas is empty. Be the first to plant a thought.
-        </p>
-      </div>
+      </main>
 
-      <!-- Thoughts grid -->
-      <div class="thoughts-grid" id="thoughtsGrid" role="list"></div>
-    </section>
-
-    <!-- ── Footer ornament ── -->
-    <div class="ornamental-border" aria-hidden="true">
-      <span class="line"></span>
-      <span>✦ ◈ ✦</span>
-      <span class="line"></span>
     </div>
-
-  </main>
+  </div>
 
   <!-- ═══ Delete Confirmation Modal ═══ -->
   <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
