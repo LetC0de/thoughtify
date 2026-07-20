@@ -4,3 +4,4 @@ pydantic_settings
 pwdlib[argon2]
 pyjwt
 alembic
+fastapi-mail

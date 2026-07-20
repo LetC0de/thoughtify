@@ -1,5 +1,6 @@
 from src.user.schema import UserSchema, UserLoginSchema
 from fastapi import HTTPException, status, Request
+from src.utils.mail import send_email
 from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 from src.utils.settings import settings
@@ -15,7 +16,7 @@ def get_password_hash(password):
     return password_hash.hash(password)
 
 
-def register_user(body: UserSchema, db: Session):
+async def register_user(body: UserSchema, db: Session):
 
     is_username_exists = db.query(UserModel).filter(UserModel.username == body.username).first()
 
@@ -41,6 +42,8 @@ def register_user(body: UserSchema, db: Session):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    await send_email(new_user.email)
 
     return new_user
 
