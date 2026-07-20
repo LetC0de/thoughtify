@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.utils.db import engine, base
 from src.thoughts.router import thought_router
+from src.user.router import user_router
 
 base.metadata.create_all(bind=engine)
 
@@ -18,4 +19,4 @@ app.add_middleware(
 )
 
 app.include_router(thought_router)
-
+app.include_router(user_router)
