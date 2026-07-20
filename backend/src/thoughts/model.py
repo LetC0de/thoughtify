@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from src.utils.db import base
 
 
@@ -8,6 +8,8 @@ class thought_model(base):
     id = Column(Integer, primary_key=True)
     title = Column(String)
     content = Column(String)
+
+    user_id = Column(Integer, ForeignKey("users.id",ondelete="CASCADE"))
     
 
     

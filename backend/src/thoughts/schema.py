@@ -12,3 +12,4 @@ class thought_response_schema(BaseModel):
     id : int
     title : str
     content : str
+    user_id : int
