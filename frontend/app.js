@@ -5,8 +5,12 @@
 
 class Thoughtify {
   constructor() {
-    this.apiBaseUser = 'http://127.0.0.1:8000/user';
-    this.apiBaseThought = 'http://127.0.0.1:8000/thought';
+    // Use environment-aware base URL — production or local dev
+    const base = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+      ? 'http://127.0.0.1:8000'
+      : 'https://thoughtify-lmgv.onrender.com';
+    this.apiBaseUser = `${base}/user`;
+    this.apiBaseThought = `${base}/thought`;
     this.tokenKey = 'thoughtify_token';
     this.userKey = 'thoughtify_user';
 
