@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════
    THOUGHTIFY — A Sanctuary for Ideas
-   Application Logic
+   Application Logic — Global Feed Edition
    ═══════════════════════════════════════════════════════ */
 
 class Thoughtify {
@@ -11,16 +11,18 @@ class Thoughtify {
     this.tokenKey = 'thoughtify_token';
     this.userKey = 'thoughtify_user';
 
-    this.thoughts = [];
+    this.feed = [];             // global feed
+    this.myThoughts = [];       // user's own
+    this.activeTab = 'global';  // 'global' | 'mine'
     this.editingId = null;
     this.isSubmitting = false;
     this.currentUser = null;
+    this.isFetching = false;
 
     this.init();
   }
 
   init() {
-    // Wait for DOM
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.boot());
     } else {
@@ -70,6 +72,7 @@ class Thoughtify {
 
     // Stats
     this.statCount = document.getElementById('statCount');
+    this.statMineCount = document.getElementById('statMineCount');
     this.totalCount = document.getElementById('totalCount');
 
     // Form
@@ -85,9 +88,17 @@ class Thoughtify {
     this.collapseIcon = document.getElementById('collapseIcon');
     this.formTitle = document.getElementById('formTitle');
 
+    // Feed
+    this.feedTabs = document.querySelectorAll('.feed-tab');
+    this.tabFeedGlobal = document.getElementById('tabFeedGlobal');
+    this.tabFeedMine = document.getElementById('tabFeedMine');
+    this.feedTitle = document.getElementById('feedTitle');
+
     // Grid & states
     this.grid = document.getElementById('thoughtsGrid');
     this.emptyState = document.getElementById('emptyState');
+    this.emptyStateTitle = document.getElementById('emptyStateTitle');
+    this.emptyStateText = document.getElementById('emptyStateText');
     this.errorState = document.getElementById('errorState');
     this.skeleton = document.getElementById('skeletonGrid');
     this.emptyStateBtn = document.getElementById('emptyStateBtn');
@@ -112,7 +123,6 @@ class Thoughtify {
     this.tabLogin.addEventListener('click', () => this.switchAuthTab('login'));
     this.tabRegister.addEventListener('click', () => this.switchAuthTab('register'));
 
-    // Tab switch links inside forms
     document.querySelectorAll('[data-switch]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         this.switchAuthTab(e.currentTarget.dataset.switch);
@@ -127,7 +137,6 @@ class Thoughtify {
     this.form.addEventListener('submit', (e) => this.handleSubmit(e));
     this.cancelEditBtn.addEventListener('click', () => this.cancelEdit());
 
-    // Keyboard shortcut: Ctrl+Enter to submit thought
     this.contentInput.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
@@ -135,8 +144,11 @@ class Thoughtify {
       }
     });
 
-    // Collapse form
     this.collapseFormBtn.addEventListener('click', () => this.toggleFormCollapse());
+
+    // Feed tabs
+    this.tabFeedGlobal.addEventListener('click', () => this.switchFeedTab('global'));
+    this.tabFeedMine.addEventListener('click', () => this.switchFeedTab('mine'));
 
     // Modal
     this.modalCancel.addEventListener('click', () => this.closeModal());
@@ -155,7 +167,7 @@ class Thoughtify {
       this.formWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
       this.titleInput.focus();
     });
-    this.retryBtn.addEventListener('click', () => this.fetchThoughts());
+    this.retryBtn.addEventListener('click', () => this.loadActiveTab());
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -168,7 +180,6 @@ class Thoughtify {
       this.showAuthView();
       return;
     }
-    // Verify token with backend
     this.verifyToken(token);
   }
 
@@ -259,7 +270,6 @@ class Thoughtify {
 
       this.showToast('Account created! Welcome to Thoughtify 🎉', 'success');
 
-      // Auto-fill login
       this.switchAuthTab('login');
       this.loginUsername.value = username;
       this.loginPassword.value = '';
@@ -279,24 +289,13 @@ class Thoughtify {
 
   /* ─── Auth Helpers ─── */
 
-  getToken() {
-    return localStorage.getItem(this.tokenKey);
-  }
-
-  saveToken(token) {
-    localStorage.setItem(this.tokenKey, token);
-  }
-
-  saveUser(user) {
-    localStorage.setItem(this.userKey, JSON.stringify(user));
-  }
+  getToken() { return localStorage.getItem(this.tokenKey); }
+  saveToken(token) { localStorage.setItem(this.tokenKey, token); }
+  saveUser(user) { localStorage.setItem(this.userKey, JSON.stringify(user)); }
 
   getUser() {
-    try {
-      return JSON.parse(localStorage.getItem(this.userKey));
-    } catch {
-      return null;
-    }
+    try { return JSON.parse(localStorage.getItem(this.userKey)); }
+    catch { return null; }
   }
 
   clearAuth() {
@@ -308,14 +307,10 @@ class Thoughtify {
   /* ─── View Switching ─── */
 
   showAuthView() {
-    const user = this.getUser();
     this.authView.style.display = 'flex';
     this.appView.style.display = 'none';
     this.loadingOverlay.classList.add('hidden');
     document.body.style.overflow = 'auto';
-
-    // Check if already logged in (token exists but verify failed maybe)
-    // Just show the login form clean
     this.loginForm.reset();
     this.registerForm.reset();
     this.loginError.textContent = '';
@@ -324,35 +319,27 @@ class Thoughtify {
 
   showAppView() {
     const user = this.currentUser || this.getUser();
-    if (!user) {
-      this.showAuthView();
-      return;
-    }
+    if (!user) { this.showAuthView(); return; }
 
     this.authView.style.display = 'none';
     this.appView.style.display = 'block';
 
-    // Update header with user info
     const initial = (user.name || user.username || '?').charAt(0).toUpperCase();
     this.userAvatar.textContent = initial;
     this.headerGreeting.textContent = `Hello, ${user.name || user.username}`;
 
-    // Hide loading overlay
     this.loadingOverlay.classList.add('hidden');
 
-    // Load thoughts
-    this.fetchThoughts();
+    this.loadActiveTab();
   }
 
   /* ─── Tab Switching ─── */
 
   switchAuthTab(tab) {
-    const tabs = [this.tabLogin, this.tabRegister];
-    const forms = [this.loginForm, this.registerForm];
-    const errors = [this.loginError, this.registerError];
-
-    tabs.forEach(t => t.classList.remove('active'));
-    forms.forEach(f => f.classList.remove('active'));
+    [this.tabLogin, this.tabRegister].forEach(t => t.classList.remove('active'));
+    [this.loginForm, this.registerForm].forEach(f => f.classList.remove('active'));
+    this.loginError.textContent = '';
+    this.registerError.textContent = '';
 
     if (tab === 'login') {
       this.tabLogin.classList.add('active');
@@ -365,12 +352,46 @@ class Thoughtify {
       this.tabRegister.setAttribute('aria-selected', 'true');
       this.tabLogin.setAttribute('aria-selected', 'false');
     }
-
-    // Clear errors
-    errors.forEach(e => e.textContent = '');
   }
 
-  /* ─── Auth UI Helpers ─── */
+  /* ═══════════════════════════════════════════════════════
+     FEED TAB SWITCHING
+     ═══════════════════════════════════════════════════════ */
+
+  switchFeedTab(tab) {
+    if (tab === this.activeTab) return;
+    this.activeTab = tab;
+
+    // Update tab UI
+    this.feedTabs.forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
+
+    if (tab === 'global') {
+      this.tabFeedGlobal.classList.add('active');
+      this.tabFeedGlobal.setAttribute('aria-selected', 'true');
+      this.feedTitle.innerHTML = 'Global <span>Feed</span>';
+      this.renderThoughts(this.feed);
+    } else {
+      this.tabFeedMine.classList.add('active');
+      this.tabFeedMine.setAttribute('aria-selected', 'true');
+      this.feedTitle.innerHTML = 'My <span>Thoughts</span>';
+      this.renderThoughts(this.myThoughts);
+    }
+  }
+
+  loadActiveTab() {
+    if (this.activeTab === 'global') {
+      this.fetchFeed();
+    } else {
+      this.fetchMyThoughts();
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     Auth UI Helpers
+     ═══════════════════════════════════════════════════════ */
 
   setAuthLoading(form, loading) {
     if (form === 'login') {
@@ -385,18 +406,17 @@ class Thoughtify {
   }
 
   showAuthError(form, message) {
-    if (form === 'login') {
-      this.loginError.textContent = message;
-    } else {
-      this.registerError.textContent = message;
-    }
+    if (form === 'login') this.loginError.textContent = message;
+    else this.registerError.textContent = message;
   }
 
   /* ═══════════════════════════════════════════════════════
      THOUGHT CRUD
      ═══════════════════════════════════════════════════════ */
 
-  async fetchThoughts() {
+  async fetchFeed() {
+    if (this.isFetching) return;
+    this.isFetching = true;
     this.showSkeleton(true);
     this.hideEmptyState();
     this.hideErrorState();
@@ -405,25 +425,52 @@ class Thoughtify {
     if (!token) return;
 
     try {
-      const res = await fetch(`${this.apiBaseThought}/all_thought`, {
+      const res = await fetch(`${this.apiBaseThought}/feed`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) {
-        if (res.status === 401) {
-          this.clearAuth();
-          this.showAuthView();
-          return;
-        }
-        throw new Error('Failed to fetch thoughts');
+        if (res.status === 401) { this.clearAuth(); this.showAuthView(); return; }
+        throw new Error('Failed to fetch feed');
       }
-      this.thoughts = await res.json();
-      this.renderThoughts();
+      this.feed = await res.json();
+      if (this.activeTab === 'global') this.renderThoughts(this.feed);
       this.updateStats();
     } catch (err) {
-      this.showErrorState();
-      this.showToast(err.message || 'Failed to load thoughts.', 'error');
+      if (this.activeTab === 'global') this.showErrorState();
+      this.showToast(err.message || 'Failed to load feed.', 'error');
     } finally {
       this.showSkeleton(false);
+      this.isFetching = false;
+    }
+  }
+
+  async fetchMyThoughts() {
+    if (this.isFetching) return;
+    this.isFetching = true;
+    this.showSkeleton(true);
+    this.hideEmptyState();
+    this.hideErrorState();
+
+    const token = this.getToken();
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${this.apiBaseThought}/mine`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        if (res.status === 401) { this.clearAuth(); this.showAuthView(); return; }
+        throw new Error('Failed to fetch your thoughts');
+      }
+      this.myThoughts = await res.json();
+      if (this.activeTab === 'mine') this.renderThoughts(this.myThoughts);
+      this.updateStats();
+    } catch (err) {
+      if (this.activeTab === 'mine') this.showErrorState();
+      this.showToast(err.message || 'Failed to load your thoughts.', 'error');
+    } finally {
+      this.showSkeleton(false);
+      this.isFetching = false;
     }
   }
 
@@ -501,7 +548,10 @@ class Thoughtify {
 
       this.form.reset();
       this.cancelEdit();
-      await this.fetchThoughts();
+      // Refresh both views
+      await Promise.all([this.fetchFeed(), this.fetchMyThoughts()]);
+      // Switch to "My Thoughts" after creating
+      if (!this.editingId) this.switchFeedTab('mine');
     } catch (err) {
       this.showToast(
         err.message || (this.editingId
@@ -533,11 +583,9 @@ class Thoughtify {
     this.cancelEditBtn.style.display = 'inline-flex';
     this.formTitle.innerHTML = 'Edit <span>Thought</span>';
 
-    // Scroll to form
     this.formWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     this.titleInput.focus();
 
-    // Ensure form is expanded
     this.formWrap.classList.remove('collapsed');
     this.collapseFormBtn.classList.remove('collapsed');
   }
@@ -559,30 +607,27 @@ class Thoughtify {
 
   /* ─── Render ─── */
 
-  renderThoughts() {
+  renderThoughts(thoughts) {
     this.hideEmptyState();
     this.hideErrorState();
     this.hideSkeleton();
 
-    if (this.thoughts.length === 0) {
+    if (!thoughts || thoughts.length === 0) {
       this.showEmptyState();
       this.grid.innerHTML = '';
       return;
     }
 
     this.grid.innerHTML = '';
-    this.thoughts.forEach((thought, index) => {
+    thoughts.forEach((thought, index) => {
       const card = this.createCard(thought, index);
       this.grid.appendChild(card);
     });
 
-    // Trigger staggered entrance animation
     requestAnimationFrame(() => {
       const cards = this.grid.querySelectorAll('.thought-card');
       cards.forEach((card, i) => {
-        setTimeout(() => {
-          card.classList.add('visible');
-        }, i * 60);
+        setTimeout(() => { card.classList.add('visible'); }, i * 60);
       });
     });
   }
@@ -592,46 +637,71 @@ class Thoughtify {
     article.className = 'thought-card';
     article.style.transitionDelay = `${index * 60}ms`;
 
-    const dateStr = thought.id
-      ? new Date(thought.id * 1000).toLocaleDateString('en-US', {
+    const isOwn = this.currentUser && thought.user_id === this.currentUser.id;
+
+    const dateStr = thought.created_at
+      ? new Date(thought.created_at).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
         })
-      : '';
+      : 'just now';
 
     article.innerHTML = `
+      <!-- Author -->
+      <div class="thought-card-author">
+        <div class="author-avatar">${(thought.author_name || '?').charAt(0).toUpperCase()}</div>
+        <div class="author-info">
+          <span class="author-name">${this.escapeHtml(thought.author_name || thought.author_username || 'Unknown')}</span>
+          <span class="author-username">${this.escapeHtml(thought.author_username || 'unknown')}</span>
+        </div>
+      </div>
+
+      <!-- Header -->
       <div class="thought-card-header">
         <span class="thought-card-bullet"></span>
         <h3 class="thought-card-title">${this.escapeHtml(thought.title)}</h3>
       </div>
+
+      <!-- Content -->
       <div class="thought-card-content">${this.escapeHtml(thought.content)}</div>
+
+      <!-- Footer -->
       <div class="thought-card-footer">
-        <span class="thought-card-date">${dateStr || 'just now'}</span>
-        <div class="thought-card-actions">
-          <button class="btn btn-ghost btn-icon edit-btn" title="Edit" aria-label="Edit thought">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="btn btn-ghost btn-icon delete-btn" title="Delete" aria-label="Delete thought">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-          </button>
+        <span class="thought-card-date">${dateStr}</span>
+        <div class="thought-card-footer-right">
+          <span class="thought-card-author-tag" style="${isOwn ? '' : 'display: none;'}" data-own-tag>you</span>
+          <div class="thought-card-actions" style="${isOwn ? '' : 'display: none;'}" data-own-actions>
+            <button class="btn btn-ghost btn-icon edit-btn" title="Edit" aria-label="Edit thought">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn btn-ghost btn-icon delete-btn" title="Delete" aria-label="Delete thought">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     `;
 
     // Edit
-    article.querySelector('.edit-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.enterEditMode(thought);
-    });
+    const editBtn = article.querySelector('.edit-btn');
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.enterEditMode(thought);
+      });
+    }
 
-    // Delete with confirmation
-    article.querySelector('.delete-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.confirmDelete(thought);
-    });
+    // Delete
+    const deleteBtn = article.querySelector('.delete-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.confirmDelete(thought);
+      });
+    }
 
     return article;
   }
@@ -654,7 +724,8 @@ class Thoughtify {
       try {
         await this.deleteThought(thought.id);
         this.showToast('Thought deleted.', 'success');
-        await this.fetchThoughts();
+        await Promise.all([this.fetchFeed(), this.fetchMyThoughts()]);
+        if (this.activeTab === 'global') this.switchFeedTab('global');
       } catch (err) {
         this.showToast(err.message || 'Failed to delete thought.', 'error');
       }
@@ -687,9 +758,13 @@ class Thoughtify {
   /* ─── Stats ─── */
 
   updateStats() {
-    const count = this.thoughts.length;
-    this.statCount.textContent = count;
-    this.totalCount.textContent = `${count} thought${count !== 1 ? 's' : ''}`;
+    const feedCount = this.feed.length;
+    const mineCount = this.myThoughts.length;
+    this.statCount.textContent = feedCount;
+    this.statMineCount.textContent = mineCount;
+    this.totalCount.textContent = this.activeTab === 'global'
+      ? `${feedCount} thought${feedCount !== 1 ? 's' : ''}`
+      : `${mineCount} thought${mineCount !== 1 ? 's' : ''}`;
   }
 
   /* ─── Empty State ─── */
@@ -698,11 +773,17 @@ class Thoughtify {
     this.emptyState.style.display = 'block';
     this.grid.innerHTML = '';
     this.hideSkeleton();
+
+    if (this.activeTab === 'global') {
+      this.emptyStateTitle.textContent = 'The Feed is Quiet';
+      this.emptyStateText.textContent = 'No thoughts have been shared yet. Be the first to spark a conversation!';
+    } else {
+      this.emptyStateTitle.textContent = 'No Thoughts Yet';
+      this.emptyStateText.textContent = 'Your mind is a quiet garden. Plant your first thought above.';
+    }
   }
 
-  hideEmptyState() {
-    this.emptyState.style.display = 'none';
-  }
+  hideEmptyState() { this.emptyState.style.display = 'none'; }
 
   /* ─── Error State ─── */
 
@@ -713,19 +794,12 @@ class Thoughtify {
     this.hideEmptyState();
   }
 
-  hideErrorState() {
-    this.errorState.style.display = 'none';
-  }
+  hideErrorState() { this.errorState.style.display = 'none'; }
 
   /* ─── Skeleton ─── */
 
-  showSkeleton(show) {
-    this.skeleton.style.display = show ? 'grid' : 'none';
-  }
-
-  hideSkeleton() {
-    this.skeleton.style.display = 'none';
-  }
+  showSkeleton(show) { this.skeleton.style.display = show ? 'grid' : 'none'; }
+  hideSkeleton() { this.skeleton.style.display = 'none'; }
 
   /* ─── Toast System ─── */
 

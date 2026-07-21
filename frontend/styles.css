@@ -877,6 +877,65 @@ body::after {
 }
 
 /* ═══════════════════════════════════════════════════════
+   FEED SECTION
+   ═══════════════════════════════════════════════════════ */
+.feed-section {
+  opacity: 0;
+  animation: fadeUp 0.8s var(--ease-out-expo) 0.25s forwards;
+}
+
+/* ─── Feed Tabs ─── */
+.feed-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 0.3rem;
+  margin-bottom: 1.75rem;
+  width: fit-content;
+}
+
+.feed-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.3s var(--ease-out);
+}
+
+.feed-tab svg {
+  opacity: 0.5;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+.feed-tab.active {
+  background: var(--bg-elevated);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.feed-tab.active svg {
+  opacity: 1;
+}
+
+.feed-tab:hover:not(.active) {
+  color: var(--text-secondary);
+}
+
+.feed-tab:hover:not(.active) svg {
+  opacity: 0.8;
+}
+
+/* ═══════════════════════════════════════════════════════
    THOUGHTS GRID
    ═══════════════════════════════════════════════════════ */
 .thoughts-section {
@@ -980,10 +1039,28 @@ body::after {
   border-top: 1px solid var(--border-subtle);
 }
 
+.thought-card-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .thought-card-date {
   font-size: 0.75rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
+}
+
+/* ─── "you" tag on own posts in global feed ─── */
+.thought-card-author-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 0.15rem 0.55rem;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  letter-spacing: 0.02em;
 }
 
 .thought-card-actions {
@@ -1000,6 +1077,51 @@ body::after {
 .thought-card-actions .btn {
   font-size: 0.85rem;
   padding: 0.35rem 0.7rem;
+}
+
+/* ─── Author Pill ─── */
+.thought-card-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.author-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.author-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.author-username {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.author-username::before {
+  content: '@';
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1365,6 +1487,23 @@ body::after {
 
   .auth-card {
     padding: 2rem 1.5rem;
+  }
+
+  .feed-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .feed-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .feed-tab svg {
+    width: 14px;
+    height: 14px;
   }
 }
 
