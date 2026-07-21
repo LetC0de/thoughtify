@@ -11,10 +11,8 @@ class Thoughtify {
     this.userKey = 'thoughtify_user';
 
     // Data
-    this.feed = [];
-    this.myThoughts = [];
     this.publicThoughts = [];
-    this.activeTab = 'global';
+    this.myThoughts = [];
     this.editingId = null;
     this.isSubmitting = false;
     this.currentUser = null;
@@ -105,7 +103,6 @@ class Thoughtify {
 
     // Stats
     this.statCount = document.getElementById('statCount');
-    this.statMineCount = document.getElementById('statMineCount');
     this.totalCount = document.getElementById('totalCount');
 
     // Form
@@ -120,18 +117,11 @@ class Thoughtify {
     this.collapseFormBtn = document.getElementById('collapseFormBtn');
     this.formTitle = document.getElementById('formTitle');
 
-    // Feed tabs
-    this.feedTabs = document.querySelectorAll('.feed-tab');
-    this.tabFeedGlobal = document.getElementById('tabFeedGlobal');
-    this.tabFeedMine = document.getElementById('tabFeedMine');
-    this.feedTitle = document.getElementById('feedTitle');
-
     // Dashboard grid & states
     this.grid = document.getElementById('thoughtsGrid');
     this.dashSkeleton = document.getElementById('dashSkeleton');
     this.dashEmpty = document.getElementById('dashEmpty');
     this.dashEmptyTitle = document.getElementById('dashEmptyTitle');
-    this.dashEmptyText = document.getElementById('dashEmptyText');
     this.dashError = document.getElementById('dashError');
     this.dashEmptyBtn = document.getElementById('dashEmptyBtn');
     this.dashRetryBtn = document.getElementById('dashRetryBtn');
@@ -200,10 +190,6 @@ class Thoughtify {
     });
     this.collapseFormBtn.addEventListener('click', () => this.toggleFormCollapse());
 
-    // Feed tabs
-    this.tabFeedGlobal.addEventListener('click', () => this.switchFeedTab('global'));
-    this.tabFeedMine.addEventListener('click', () => this.switchFeedTab('mine'));
-
     // Modal
     this.modalCancel.addEventListener('click', () => this.closeModal());
     this.modal.addEventListener('click', (e) => {
@@ -218,7 +204,7 @@ class Thoughtify {
       this.formWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
       this.titleInput.focus();
     });
-    this.dashRetryBtn.addEventListener('click', () => this.loadDashActiveTab());
+    this.dashRetryBtn.addEventListener('click', () => this.fetchMyThoughts());
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -249,8 +235,8 @@ class Thoughtify {
     // Update landing nav
     this.landingUserAvatar.textContent = initial;
 
-    // Load data
-    this.loadDashActiveTab();
+    // Load my thoughts
+    this.fetchMyThoughts();
   }
 
   /* ─── Auth Overlay ─── */
@@ -539,65 +525,8 @@ class Thoughtify {
   }
 
   /* ═══════════════════════════════════════════════════════
-     DASHBOARD FEED
+     DASHBOARD — MY THOUGHTS ONLY
      ═══════════════════════════════════════════════════════ */
-
-  switchFeedTab(tab) {
-    if (tab === this.activeTab) return;
-    this.activeTab = tab;
-
-    this.feedTabs.forEach(t => {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    });
-
-    if (tab === 'global') {
-      this.tabFeedGlobal.classList.add('active');
-      this.tabFeedGlobal.setAttribute('aria-selected', 'true');
-      this.feedTitle.innerHTML = 'Global <span>Feed</span>';
-      this.renderDashboardThoughts(this.feed);
-    } else {
-      this.tabFeedMine.classList.add('active');
-      this.tabFeedMine.setAttribute('aria-selected', 'true');
-      this.feedTitle.innerHTML = 'My <span>Thoughts</span>';
-      this.renderDashboardThoughts(this.myThoughts);
-    }
-  }
-
-  loadDashActiveTab() {
-    if (this.activeTab === 'global') this.fetchDashFeed();
-    else this.fetchMyThoughts();
-  }
-
-  async fetchDashFeed() {
-    if (this.isFetching) return;
-    this.isFetching = true;
-    this.dashSkeleton.style.display = 'grid';
-    this.dashEmpty.style.display = 'none';
-    this.dashError.style.display = 'none';
-
-    const token = this.getToken();
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${this.apiBaseThought}/feed`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        if (res.status === 401) { this.clearAuth(); this.showLanding(); return; }
-        throw new Error('Failed to load feed');
-      }
-      this.feed = await res.json();
-      if (this.activeTab === 'global') this.renderDashboardThoughts(this.feed);
-      this.updateStats();
-    } catch (err) {
-      if (this.activeTab === 'global') this.dashError.style.display = 'block';
-      this.showToast(err.message || 'Failed to load feed.', 'error');
-    } finally {
-      this.dashSkeleton.style.display = 'none';
-      this.isFetching = false;
-    }
-  }
 
   async fetchMyThoughts() {
     if (this.isFetching) return;
@@ -618,10 +547,9 @@ class Thoughtify {
         throw new Error('Failed to load your thoughts');
       }
       this.myThoughts = await res.json();
-      if (this.activeTab === 'mine') this.renderDashboardThoughts(this.myThoughts);
-      this.updateStats();
+      this.renderMyThoughts();
     } catch (err) {
-      if (this.activeTab === 'mine') this.dashError.style.display = 'block';
+      this.dashError.style.display = 'block';
       this.showToast(err.message || 'Failed to load your thoughts.', 'error');
     } finally {
       this.dashSkeleton.style.display = 'none';
@@ -629,26 +557,22 @@ class Thoughtify {
     }
   }
 
-  renderDashboardThoughts(thoughts) {
+  renderMyThoughts() {
     this.dashSkeleton.style.display = 'none';
     this.dashError.style.display = 'none';
+    const count = this.myThoughts.length;
+    this.statCount.textContent = count;
+    this.totalCount.textContent = `${count} thought${count !== 1 ? 's' : ''}`;
 
-    if (!thoughts || thoughts.length === 0) {
+    if (count === 0) {
       this.dashEmpty.style.display = 'block';
-      if (this.activeTab === 'global') {
-        this.dashEmptyTitle.textContent = 'The Feed is Quiet';
-        this.dashEmptyText.textContent = 'No thoughts have been shared yet. Be the first to spark a conversation!';
-      } else {
-        this.dashEmptyTitle.textContent = 'No Thoughts Yet';
-        this.dashEmptyText.textContent = 'Your mind is a quiet garden. Plant your first thought above.';
-      }
       this.grid.innerHTML = '';
       return;
     }
 
     this.dashEmpty.style.display = 'none';
     this.grid.innerHTML = '';
-    thoughts.forEach((thought, index) => {
+    this.myThoughts.forEach((thought, index) => {
       const card = this.createDashCard(thought, index);
       this.grid.appendChild(card);
     });
@@ -666,8 +590,6 @@ class Thoughtify {
     article.className = 'thought-card';
     article.style.transitionDelay = `${index * 60}ms`;
 
-    const isOwn = this.currentUser && thought.user_id === this.currentUser.id;
-
     const dateStr = thought.created_at
       ? new Date(thought.created_at).toLocaleDateString('en-US', {
           year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -675,13 +597,6 @@ class Thoughtify {
       : 'just now';
 
     article.innerHTML = `
-      <div class="thought-card-author">
-        <div class="author-avatar">${(thought.author_name || '?').charAt(0).toUpperCase()}</div>
-        <div class="author-info">
-          <span class="author-name">${this.escapeHtml(thought.author_name || thought.author_username || 'Unknown')}</span>
-          <span class="author-username">${this.escapeHtml(thought.author_username || 'unknown')}</span>
-        </div>
-      </div>
       <div class="thought-card-header">
         <span class="thought-card-bullet"></span>
         <h3 class="thought-card-title">${this.escapeHtml(thought.title)}</h3>
@@ -689,16 +604,13 @@ class Thoughtify {
       <div class="thought-card-content">${this.escapeHtml(thought.content)}</div>
       <div class="thought-card-footer">
         <span class="thought-card-date">${dateStr}</span>
-        <div class="thought-card-footer-right">
-          <span class="thought-card-author-tag" style="${isOwn ? '' : 'display: none;'}">you</span>
-          <div class="thought-card-actions" style="${isOwn ? '' : 'display: none;'}">
-            <button class="btn btn-ghost btn-icon edit-btn" title="Edit" aria-label="Edit thought">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="btn btn-ghost btn-icon delete-btn" title="Delete" aria-label="Delete thought">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            </button>
-          </div>
+        <div class="thought-card-actions" style="opacity: 1;">
+          <button class="btn btn-ghost btn-icon edit-btn" title="Edit" aria-label="Edit thought">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-icon delete-btn" title="Delete" aria-label="Delete thought">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
         </div>
       </div>
     `;
@@ -773,8 +685,7 @@ class Thoughtify {
       }
       this.form.reset();
       this.cancelEdit();
-      await Promise.all([this.fetchDashFeed(), this.fetchMyThoughts(), this.fetchPublicFeed()]);
-      if (!this.editingId) this.switchFeedTab('mine');
+      await Promise.all([this.fetchMyThoughts(), this.fetchPublicFeed()]);
     } catch (err) {
       this.showToast(err.message || 'Failed to save thought.', 'error');
     } finally {
@@ -829,7 +740,7 @@ class Thoughtify {
       try {
         await this.deleteThought(thought.id);
         this.showToast('Thought deleted.', 'success');
-        await Promise.all([this.fetchDashFeed(), this.fetchMyThoughts(), this.fetchPublicFeed()]);
+        await Promise.all([this.fetchMyThoughts(), this.fetchPublicFeed()]);
       } catch (err) {
         this.showToast(err.message || 'Failed to delete thought.', 'error');
       }
@@ -854,18 +765,6 @@ class Thoughtify {
   closeModal() {
     this.modal.classList.remove('active');
     document.body.style.overflow = '';
-  }
-
-  /* ─── Stats ─── */
-
-  updateStats() {
-    const feedCount = this.feed.length;
-    const mineCount = this.myThoughts.length;
-    this.statCount.textContent = feedCount;
-    this.statMineCount.textContent = mineCount;
-    this.totalCount.textContent = this.activeTab === 'global'
-      ? `${feedCount} thought${feedCount !== 1 ? 's' : ''}`
-      : `${mineCount} thought${mineCount !== 1 ? 's' : ''}`;
   }
 
   /* ─── Toast ─── */
