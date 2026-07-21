@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thoughtify — A Sanctuary for Ideas</title>
-  <meta name="description" content="A warm, intimate space to capture and nurture your thoughts." />
+  <title>Thoughtify — Where Ideas Find Their Voice</title>
+  <meta name="description" content="A warm, intimate space to capture and share your thoughts with the world." />
 
-  <!-- Fonts: Playfair Display (display), Instrument Serif (alt), DM Sans (body) -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" />
@@ -18,7 +18,6 @@
   <!-- ═══ Ambient Glows ═══ -->
   <div class="ambient-glow ambient-glow--top" aria-hidden="true"></div>
   <div class="ambient-glow ambient-glow--bottom" aria-hidden="true"></div>
-  <div class="ambient-glow ambient-glow--auth" aria-hidden="true"></div>
 
   <!-- ═══ Loading Overlay ═══ -->
   <div class="loading-overlay" id="loadingOverlay">
@@ -29,104 +28,246 @@
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════════════
-       AUTH VIEW (Login / Register)
-       ════════════════════════════════════════════════ -->
-  <div class="auth-view" id="authView" style="display: none;">
+  <!-- ═══════════════════════════════════════════════════════
+       LANDING PAGE — visible to everyone
+       ═══════════════════════════════════════════════════════ -->
+  <div class="landing-view" id="landingView">
+
+    <!-- ── Nav Bar ── -->
+    <nav class="landing-nav" id="landingNav">
+      <div class="landing-nav-inner">
+        <a href="/" class="logo" aria-label="Thoughtify home">
+          <span class="logo-icon" aria-hidden="true">✦</span>
+          <span class="logo-text">Thought<span>ify</span></span>
+        </a>
+
+        <div class="landing-nav-actions" id="landingNavActions">
+          <button class="btn btn-secondary btn-sm" id="landingLoginBtn">Sign In</button>
+          <button class="btn btn-primary btn-sm" id="landingSignupBtn">Get Started</button>
+          <div class="landing-user-signedin" id="landingUserSignedin" style="display: none;">
+            <div class="user-avatar user-avatar--sm" id="landingUserAvatar">A</div>
+            <button class="btn btn-ghost btn-sm" id="landingDashboardBtn">Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Hero Section ── -->
+    <section class="hero" id="heroSection">
+      <div class="hero-content">
+        <div class="hero-badge" id="heroBadge">A Sanctuary for Ideas</div>
+        <h1 class="hero-title">
+          Where Thoughts<br />
+          <span class="hero-title-accent">Find Their Voice</span>
+        </h1>
+        <p class="hero-subtitle">
+          Share your ideas, discover perspectives, and connect with minds
+          that think differently. Thoughtify is a warm, intimate space
+          for the things that matter to you.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" id="heroStartBtn">
+            Start Sharing
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-lg" id="heroExploreBtn">
+            Explore Feed
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></polyline></svg>
+          </button>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-glow"></div>
+        <div class="hero-card hero-card--1">
+          <div class="hero-card-dot"></div>
+          <div class="hero-card-line hero-card-line--short"></div>
+          <div class="hero-card-line hero-card-line--long"></div>
+        </div>
+        <div class="hero-card hero-card--2">
+          <div class="hero-card-dot"></div>
+          <div class="hero-card-line hero-card-line--short"></div>
+          <div class="hero-card-line hero-card-line--long"></div>
+        </div>
+        <div class="hero-card hero-card--3">
+          <div class="hero-card-dot"></div>
+          <div class="hero-card-line hero-card-line--short"></div>
+          <div class="hero-card-line hero-card-line--long"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Divider ── -->
+    <div class="divider" aria-hidden="true">
+      <span class="divider-line"></span>
+      <span class="divider-ornament">◈</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <!-- ── Public Feed Section ── -->
+    <section class="public-feed-section" id="publicFeedSection">
+      <div class="section-header">
+        <h2 class="section-title">Latest <span>Thoughts</span></h2>
+        <span class="section-count" id="publicFeedCount">0</span>
+      </div>
+
+      <!-- Skeleton -->
+      <div class="skeleton-grid" id="publicSkeleton" style="display: none;">
+        <div class="skeleton-card"><div class="skeleton-line skeleton-line--short"></div><div class="skeleton-line skeleton-line--long"></div><div class="skeleton-line skeleton-line--medium"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line skeleton-line--short"></div><div class="skeleton-line skeleton-line--long"></div><div class="skeleton-line skeleton-line--medium"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line skeleton-line--short"></div><div class="skeleton-line skeleton-line--long"></div><div class="skeleton-line skeleton-line--medium"></div></div>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" id="publicEmpty" style="display: none;">
+        <div class="empty-state-icon">💭</div>
+        <h3 class="empty-state-title">The Feed is Quiet</h3>
+        <p class="empty-state-text">No thoughts have been shared yet. Be the first to spark a conversation!</p>
+        <button class="btn btn-primary" id="publicEmptyBtn">Be the First</button>
+      </div>
+
+      <!-- Error -->
+      <div class="error-state" id="publicError" style="display: none;">
+        <div class="error-state-icon">⚠</div>
+        <h3 class="error-state-title">Couldn't Load Feed</h3>
+        <p class="error-state-text">The server is taking a little nap. Check back in a moment.</p>
+        <button class="btn btn-secondary" id="publicRetryBtn">Try Again</button>
+      </div>
+
+      <!-- Feed Grid -->
+      <div class="thoughts-grid" id="publicFeedGrid" role="list"></div>
+    </section>
+
+    <!-- ── Feature Banners ── -->
+    <section class="features">
+      <div class="divider" aria-hidden="true">
+        <span class="divider-line"></span>
+        <span class="divider-ornament">◈</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">✎</div>
+          <h3 class="feature-title">Free Your Mind</h3>
+          <p class="feature-text">Capture thoughts as they come. No filters, no judgment — just your authentic voice.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◉</div>
+          <h3 class="feature-title">Share Freely</h3>
+          <p class="feature-text">Every thought you share ripples through the feed. Connect with kindred spirits.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✦</div>
+          <h3 class="feature-title">Stay Inspired</h3>
+          <p class="feature-text">Discover what others are thinking. The global feed is a garden of diverse ideas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Footer ── -->
+    <footer class="landing-footer">
+      <div class="ornamental-border" aria-hidden="true">
+        <span class="line"></span>
+        <span>✦ ◈ ✦</span>
+        <span class="line"></span>
+      </div>
+      <p class="landing-footer-text">Thoughtify — A Sanctuary for Ideas. <span class="footer-meta">Made with intention.</span></p>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUTH MODAL — slides over landing page
+       ═══════════════════════════════════════════════════════ -->
+  <div class="auth-overlay" id="authOverlay" style="display: none;">
     <div class="auth-backdrop" aria-hidden="true"></div>
 
     <div class="auth-container">
       <div class="auth-card" id="authCard">
+        <button class="auth-close" id="authCloseBtn" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
 
-        <!-- Logo -->
         <a href="/" class="auth-logo" aria-label="Thoughtify home">
           <span class="auth-logo-icon" aria-hidden="true">✦</span>
           <span class="auth-logo-text">Thought<span>ify</span></span>
         </a>
 
-        <!-- Tabs -->
         <div class="auth-tabs" role="tablist">
           <button class="auth-tab active" data-tab="login" role="tab" aria-selected="true" id="tabLogin">Sign In</button>
           <button class="auth-tab" data-tab="register" role="tab" aria-selected="false" id="tabRegister">Create Account</button>
         </div>
 
-        <!-- ── Login Form ── -->
+        <!-- Login -->
         <form class="auth-form active" id="loginForm" novalidate autocomplete="off">
           <div class="form-group">
             <label for="loginUsername" class="form-label">Username</label>
             <input type="text" id="loginUsername" class="form-input" placeholder="Your username" required autocomplete="username" />
           </div>
-
           <div class="form-group">
             <label for="loginPassword" class="form-label">Password</label>
             <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
           </div>
-
           <div class="auth-error" id="loginError" role="alert"></div>
-
           <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
             <span class="btn-spinner" id="loginSpinner" style="display: none;"></span>
             <span id="loginBtnText">Sign In</span>
           </button>
-
           <p class="auth-alt">
             Don't have an account?
             <button type="button" class="btn-link" data-switch="register">Create one</button>
           </p>
         </form>
 
-        <!-- ── Register Form ── -->
+        <!-- Register -->
         <form class="auth-form" id="registerForm" novalidate autocomplete="off">
           <div class="form-group">
             <label for="regName" class="form-label">Name</label>
             <input type="text" id="regName" class="form-input" placeholder="Your name" required autocomplete="name" />
           </div>
-
           <div class="form-group">
             <label for="regUsername" class="form-label">Username</label>
             <input type="text" id="regUsername" class="form-input" placeholder="Choose a username" required autocomplete="username" />
           </div>
-
           <div class="form-group">
             <label for="regEmail" class="form-label">Email</label>
             <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" required autocomplete="email" />
           </div>
-
           <div class="form-group">
             <label for="regPassword" class="form-label">Password</label>
             <input type="password" id="regPassword" class="form-input" placeholder="Create a strong password" required autocomplete="new-password" />
           </div>
-
           <div class="auth-error" id="registerError" role="alert"></div>
-
           <button type="submit" class="btn btn-primary btn-full" id="registerBtn">
             <span class="btn-spinner" id="registerSpinner" style="display: none;"></span>
             <span id="registerBtnText">Create Account</span>
           </button>
-
           <p class="auth-alt">
             Already have an account?
             <button type="button" class="btn-link" data-switch="login">Sign in</button>
           </p>
         </form>
-
       </div>
     </div>
   </div>
 
-  <!-- ════════════════════════════════════════════════
-       APP VIEW (Dashboard — after login)
-       ════════════════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════════════════
+       DASHBOARD VIEW — authenticated users only
+       ═══════════════════════════════════════════════════════ -->
   <div class="app-view" id="appView" style="display: none;">
     <div class="app-view-inner">
 
-      <!-- ── Header ── -->
+      <!-- ── Dashboard Header ── -->
       <header class="app-header" role="banner">
         <div class="header-inner">
-          <a href="/" class="logo" aria-label="Thoughtify home">
-            <span class="logo-icon" aria-hidden="true">✦</span>
-            <span class="logo-text">Thought<span>ify</span></span>
-          </a>
+          <div class="header-left">
+            <button class="btn btn-ghost btn-icon btn-back" id="backToLandingBtn" title="Back to home" aria-label="Back to home">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></polyline></svg>
+            </button>
+            <a href="/" class="logo" aria-label="Thoughtify home">
+              <span class="logo-icon" aria-hidden="true">✦</span>
+              <span class="logo-text">Thought<span>ify</span></span>
+            </a>
+          </div>
 
           <div class="header-user" id="headerUser">
             <span class="header-greeting" id="headerGreeting">Hello</span>
@@ -139,12 +280,17 @@
         </div>
       </header>
 
-      <!-- ── Main Content ── -->
+      <!-- ── Dashboard Content ── -->
       <main class="main" role="main">
+
+        <div class="dashboard-welcome" id="dashboardWelcome">
+          <h2 class="dashboard-welcome-title" id="dashboardTitle">Welcome back, <span>thinker</span></h2>
+          <p class="dashboard-welcome-text">What's on your mind today?</p>
+        </div>
 
         <!-- ── Stats Bar ── -->
         <section class="stats-bar" id="statsBar">
-          <div class="stat-item" id="statFeedCount">
+          <div class="stat-item">
             <span class="stat-number" id="statCount">0</span>
             <span class="stat-label">In Feed</span>
           </div>
@@ -160,7 +306,6 @@
           </div>
         </section>
 
-        <!-- ── Divider ── -->
         <div class="divider" aria-hidden="true">
           <span class="divider-line"></span>
           <span class="divider-ornament">◈</span>
@@ -180,41 +325,16 @@
             <form class="thought-form" id="thoughtForm" novalidate>
               <div class="form-group">
                 <label for="thoughtTitle" class="form-label">Title</label>
-                <input
-                  type="text"
-                  id="thoughtTitle"
-                  class="form-input"
-                  placeholder="What's on your mind?"
-                  required
-                  autocomplete="off"
-                  maxlength="200"
-                />
+                <input type="text" id="thoughtTitle" class="form-input" placeholder="What's on your mind?" required autocomplete="off" maxlength="200" />
               </div>
-
               <div class="form-group">
                 <label for="thoughtContent" class="form-label">Thought</label>
-                <textarea
-                  id="thoughtContent"
-                  class="form-textarea"
-                  placeholder="Write freely. No judgment, no filters — just your voice."
-                  required
-                  maxlength="5000"
-                ></textarea>
+                <textarea id="thoughtContent" class="form-textarea" placeholder="Write freely. No judgment, no filters — just your voice." required maxlength="5000"></textarea>
               </div>
-
               <div class="form-footer">
-                <span class="form-hint">
-                  <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit
-                </span>
+                <span class="form-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit</span>
                 <div class="form-actions">
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    id="cancelEditBtn"
-                    style="display: none;"
-                  >
-                    Cancel
-                  </button>
+                  <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display: none;">Cancel</button>
                   <button type="submit" class="btn btn-primary" id="submitBtn">
                     <span class="btn-spinner" id="submitSpinner" style="display: none;"></span>
                     <span id="submitBtnText">Share Thought</span>
@@ -243,55 +363,29 @@
             <span class="section-count" id="totalCount">0</span>
           </div>
 
-          <!-- Skeleton loader -->
-          <div class="skeleton-grid" id="skeletonGrid" style="display: none;">
-            <div class="skeleton-card">
-              <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-line skeleton-line--long"></div>
-              <div class="skeleton-line skeleton-line--medium"></div>
-              <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
-            </div>
-            <div class="skeleton-card">
-              <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-line skeleton-line--long"></div>
-              <div class="skeleton-line skeleton-line--medium"></div>
-              <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
-            </div>
-            <div class="skeleton-card">
-              <div class="skeleton-line skeleton-line--short"></div>
-              <div class="skeleton-line skeleton-line--long"></div>
-              <div class="skeleton-line skeleton-line--medium"></div>
-              <div class="skeleton-line skeleton-line--long" style="width: 40%;"></div>
-            </div>
+          <div class="skeleton-grid" id="dashSkeleton" style="display: none;">
+            <div class="skeleton-card"><div class="skeleton-line skeleton-line--short"></div><div class="skeleton-line skeleton-line--long"></div><div class="skeleton-line skeleton-line--medium"></div></div>
+            <div class="skeleton-card"><div class="skeleton-line skeleton-line--short"></div><div class="skeleton-line skeleton-line--long"></div><div class="skeleton-line skeleton-line--medium"></div></div>
+            <div class="skeleton-card"><div class="skeleton-line skeleton-line--short"></div><div class="skeleton-line skeleton-line--long"></div><div class="skeleton-line skeleton-line--medium"></div></div>
           </div>
 
-          <!-- Empty state -->
-          <div class="empty-state" id="emptyState" style="display: none;">
+          <div class="empty-state" id="dashEmpty" style="display: none;">
             <div class="empty-state-icon">💭</div>
-            <h3 class="empty-state-title" id="emptyStateTitle">No Thoughts Yet</h3>
-            <p class="empty-state-text" id="emptyStateText">
-              Your mind is a quiet garden. Plant your first thought above.
-            </p>
-            <button class="btn btn-primary" id="emptyStateBtn">
-              Write Your First Thought
-            </button>
+            <h3 class="empty-state-title" id="dashEmptyTitle">No Thoughts Yet</h3>
+            <p class="empty-state-text" id="dashEmptyText">Your mind is a quiet garden. Plant your first thought above.</p>
+            <button class="btn btn-primary" id="dashEmptyBtn">Write Your First Thought</button>
           </div>
 
-          <!-- Error state -->
-          <div class="error-state" id="errorState" style="display: none;">
+          <div class="error-state" id="dashError" style="display: none;">
             <div class="error-state-icon">⚠</div>
             <h3 class="error-state-title">Connection Lost</h3>
-            <p class="error-state-text">
-              Couldn't reach the server. Make sure your backend is running.
-            </p>
-            <button class="btn btn-secondary" id="retryBtn">Try Again</button>
+            <p class="error-state-text">Couldn't reach the server. Make sure your backend is running.</p>
+            <button class="btn btn-secondary" id="dashRetryBtn">Try Again</button>
           </div>
 
-          <!-- Thoughts grid container -->
           <div class="thoughts-grid" id="thoughtsGrid" role="list"></div>
         </section>
 
-        <!-- ── Footer ornament ── -->
         <div class="ornamental-border" aria-hidden="true">
           <span class="line"></span>
           <span>✦ ◈ ✦</span>
@@ -299,7 +393,6 @@
         </div>
 
       </main>
-
     </div>
   </div>
 
@@ -318,7 +411,6 @@
   <!-- ═══ Toast Container ═══ -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-  <!-- ═══ Scripts ═══ -->
   <script src="app.js"></script>
 </body>
 </html>

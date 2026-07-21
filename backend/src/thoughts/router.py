@@ -12,6 +12,12 @@ from typing import List
 thought_router = APIRouter(prefix="/thought")
 
 
+@thought_router.get("/public", response_model=List[thought_feed_schema], status_code=status.HTTP_200_OK)
+def get_public_feed(db: Session = Depends(get_db)):
+    """Public feed — no auth required."""
+    return controller.get_public_feed(db)
+
+
 @thought_router.post("/create", response_model=thought_response_schema, status_code=status.HTTP_201_CREATED)
 def create_thought(body: thought_schema, db: Session = Depends(get_db), user: UserModel = Depends(is_authenticated)):
     return controller.create_thought(body, db, user)

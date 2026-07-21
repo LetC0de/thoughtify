@@ -1,19 +1,20 @@
 /* ═══════════════════════════════════════════════════════
    THOUGHTIFY — A Sanctuary for Ideas
-   Application Logic — Global Feed Edition
+   Application Logic — Landing-First Architecture
    ═══════════════════════════════════════════════════════ */
 
 class Thoughtify {
   constructor() {
-    // ─── Config ───
     this.apiBaseUser = 'http://127.0.0.1:8000/user';
     this.apiBaseThought = 'http://127.0.0.1:8000/thought';
     this.tokenKey = 'thoughtify_token';
     this.userKey = 'thoughtify_user';
 
-    this.feed = [];             // global feed
-    this.myThoughts = [];       // user's own
-    this.activeTab = 'global';  // 'global' | 'mine'
+    // Data
+    this.feed = [];
+    this.myThoughts = [];
+    this.publicThoughts = [];
+    this.activeTab = 'global';
     this.editingId = null;
     this.isSubmitting = false;
     this.currentUser = null;
@@ -31,20 +32,51 @@ class Thoughtify {
   }
 
   boot() {
-    this.cacheDOMElements();
-    this.bindEvents();
-    this.checkAuth();
+    try {
+      this.cacheDOMElements();
+      this.bindEvents();
+      this.checkAuth();
+
+      // Load public feed immediately on landing
+      this.fetchPublicFeed();
+    } catch (e) {
+      console.error('Boot error:', e);
+      // Still hide loading so page isn't stuck forever
+      this.loadingOverlay?.classList.add('hidden');
+    }
   }
 
   /* ─── DOM Caching ─── */
 
   cacheDOMElements() {
     // Views
-    this.authView = document.getElementById('authView');
+    this.landingView = document.getElementById('landingView');
     this.appView = document.getElementById('appView');
     this.loadingOverlay = document.getElementById('loadingOverlay');
 
-    // Auth
+    // Landing nav
+    this.landingLoginBtn = document.getElementById('landingLoginBtn');
+    this.landingSignupBtn = document.getElementById('landingSignupBtn');
+    this.landingUserSignedin = document.getElementById('landingUserSignedin');
+    this.landingUserAvatar = document.getElementById('landingUserAvatar');
+    this.landingDashboardBtn = document.getElementById('landingDashboardBtn');
+
+    // Hero
+    this.heroStartBtn = document.getElementById('heroStartBtn');
+    this.heroExploreBtn = document.getElementById('heroExploreBtn');
+
+    // Public feed
+    this.publicFeedGrid = document.getElementById('publicFeedGrid');
+    this.publicSkeleton = document.getElementById('publicSkeleton');
+    this.publicEmpty = document.getElementById('publicEmpty');
+    this.publicError = document.getElementById('publicError');
+    this.publicFeedCount = document.getElementById('publicFeedCount');
+    this.publicEmptyBtn = document.getElementById('publicEmptyBtn');
+    this.publicRetryBtn = document.getElementById('publicRetryBtn');
+
+    // Auth overlay
+    this.authOverlay = document.getElementById('authOverlay');
+    this.authCloseBtn = document.getElementById('authCloseBtn');
     this.tabLogin = document.getElementById('tabLogin');
     this.tabRegister = document.getElementById('tabRegister');
     this.loginForm = document.getElementById('loginForm');
@@ -57,7 +89,6 @@ class Thoughtify {
     this.registerSpinner = document.getElementById('registerSpinner');
     this.loginBtnText = document.getElementById('loginBtnText');
     this.registerBtnText = document.getElementById('registerBtnText');
-
     this.loginUsername = document.getElementById('loginUsername');
     this.loginPassword = document.getElementById('loginPassword');
     this.regName = document.getElementById('regName');
@@ -65,10 +96,12 @@ class Thoughtify {
     this.regEmail = document.getElementById('regEmail');
     this.regPassword = document.getElementById('regPassword');
 
-    // App header
+    // Dashboard header
     this.headerGreeting = document.getElementById('headerGreeting');
     this.userAvatar = document.getElementById('userAvatar');
     this.logoutBtn = document.getElementById('logoutBtn');
+    this.backToLandingBtn = document.getElementById('backToLandingBtn');
+    this.dashboardTitle = document.getElementById('dashboardTitle');
 
     // Stats
     this.statCount = document.getElementById('statCount');
@@ -85,24 +118,23 @@ class Thoughtify {
     this.cancelEditBtn = document.getElementById('cancelEditBtn');
     this.formWrap = document.getElementById('formWrap');
     this.collapseFormBtn = document.getElementById('collapseFormBtn');
-    this.collapseIcon = document.getElementById('collapseIcon');
     this.formTitle = document.getElementById('formTitle');
 
-    // Feed
+    // Feed tabs
     this.feedTabs = document.querySelectorAll('.feed-tab');
     this.tabFeedGlobal = document.getElementById('tabFeedGlobal');
     this.tabFeedMine = document.getElementById('tabFeedMine');
     this.feedTitle = document.getElementById('feedTitle');
 
-    // Grid & states
+    // Dashboard grid & states
     this.grid = document.getElementById('thoughtsGrid');
-    this.emptyState = document.getElementById('emptyState');
-    this.emptyStateTitle = document.getElementById('emptyStateTitle');
-    this.emptyStateText = document.getElementById('emptyStateText');
-    this.errorState = document.getElementById('errorState');
-    this.skeleton = document.getElementById('skeletonGrid');
-    this.emptyStateBtn = document.getElementById('emptyStateBtn');
-    this.retryBtn = document.getElementById('retryBtn');
+    this.dashSkeleton = document.getElementById('dashSkeleton');
+    this.dashEmpty = document.getElementById('dashEmpty');
+    this.dashEmptyTitle = document.getElementById('dashEmptyTitle');
+    this.dashEmptyText = document.getElementById('dashEmptyText');
+    this.dashError = document.getElementById('dashError');
+    this.dashEmptyBtn = document.getElementById('dashEmptyBtn');
+    this.dashRetryBtn = document.getElementById('dashRetryBtn');
 
     // Modal
     this.modal = document.getElementById('modalOverlay');
@@ -119,10 +151,29 @@ class Thoughtify {
   /* ─── Event Binding ─── */
 
   bindEvents() {
+    // Landing nav buttons → open auth
+    this.landingLoginBtn.addEventListener('click', () => this.openAuth('login'));
+    this.landingSignupBtn.addEventListener('click', () => this.openAuth('register'));
+    this.heroStartBtn.addEventListener('click', () => this.openAuth('register'));
+
+    // Hero explore → scroll to public feed
+    this.heroExploreBtn.addEventListener('click', () => {
+      document.getElementById('publicFeedSection').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Public feed actions
+    this.publicEmptyBtn.addEventListener('click', () => this.openAuth('register'));
+    this.publicRetryBtn.addEventListener('click', () => this.fetchPublicFeed());
+
+    // Auth overlay
+    this.authCloseBtn.addEventListener('click', () => this.closeAuth());
+    this.authOverlay.addEventListener('click', (e) => {
+      if (e.target === this.authOverlay) this.closeAuth();
+    });
+
     // Auth tabs
     this.tabLogin.addEventListener('click', () => this.switchAuthTab('login'));
     this.tabRegister.addEventListener('click', () => this.switchAuthTab('register'));
-
     document.querySelectorAll('[data-switch]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         this.switchAuthTab(e.currentTarget.dataset.switch);
@@ -133,17 +184,20 @@ class Thoughtify {
     this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
     this.registerForm.addEventListener('submit', (e) => this.handleRegister(e));
 
+    // Dashboard nav
+    this.logoutBtn.addEventListener('click', () => this.logout());
+    this.backToLandingBtn.addEventListener('click', () => this.showLanding());
+    this.landingDashboardBtn.addEventListener('click', () => this.showDashboard());
+
     // Thought form
     this.form.addEventListener('submit', (e) => this.handleSubmit(e));
     this.cancelEditBtn.addEventListener('click', () => this.cancelEdit());
-
     this.contentInput.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         this.form.dispatchEvent(new Event('submit'));
       }
     });
-
     this.collapseFormBtn.addEventListener('click', () => this.toggleFormCollapse());
 
     // Feed tabs
@@ -156,18 +210,72 @@ class Thoughtify {
       if (e.target === this.modal) this.closeModal();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') this.closeModal();
+      if (e.key === 'Escape') { this.closeModal(); this.closeAuth(); }
     });
 
-    // Logout
-    this.logoutBtn.addEventListener('click', () => this.logout());
-
-    // Empty state & retry
-    this.emptyStateBtn.addEventListener('click', () => {
+    // Dashboard state buttons
+    this.dashEmptyBtn.addEventListener('click', () => {
       this.formWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
       this.titleInput.focus();
     });
-    this.retryBtn.addEventListener('click', () => this.loadActiveTab());
+    this.dashRetryBtn.addEventListener('click', () => this.loadDashActiveTab());
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     VIEW MANAGEMENT
+     ═══════════════════════════════════════════════════════ */
+
+  showLanding() {
+    this.appView.style.display = 'none';
+    this.landingView.style.display = 'block';
+    document.body.style.overflow = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  showDashboard() {
+    this.landingView.style.display = 'none';
+    this.appView.style.display = 'block';
+    document.body.style.overflow = '';
+
+    const user = this.currentUser || this.getUser();
+    if (!user) { this.showLanding(); return; }
+
+    // Update dashboard
+    const initial = (user.name || user.username || '?').charAt(0).toUpperCase();
+    this.userAvatar.textContent = initial;
+    this.headerGreeting.textContent = `Hello, ${user.name || user.username}`;
+    this.dashboardTitle.innerHTML = `Welcome back, <span>${user.name || user.username}</span>`;
+
+    // Update landing nav
+    this.landingUserAvatar.textContent = initial;
+
+    // Load data
+    this.loadDashActiveTab();
+  }
+
+  /* ─── Auth Overlay ─── */
+
+  openAuth(tab = 'login') {
+    this.authOverlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    this.switchAuthTab(tab);
+
+    // Clear errors
+    this.loginError.textContent = '';
+    this.registerError.textContent = '';
+    this.loginForm.reset();
+    this.registerForm.reset();
+
+    // Focus first field
+    setTimeout(() => {
+      if (tab === 'login') this.loginUsername.focus();
+      else this.regName.focus();
+    }, 300);
+  }
+
+  closeAuth() {
+    this.authOverlay.style.display = 'none';
+    document.body.style.overflow = '';
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -177,7 +285,8 @@ class Thoughtify {
   checkAuth() {
     const token = this.getToken();
     if (!token) {
-      this.showAuthView();
+      // No token — hide loading and show landing immediately
+      this.loadingOverlay.classList.add('hidden');
       return;
     }
     this.verifyToken(token);
@@ -192,10 +301,11 @@ class Thoughtify {
       const user = await res.json();
       this.currentUser = user;
       this.saveUser(user);
-      this.showAppView();
+      this.updateLandingNav(user);
+      this.loadingOverlay.classList.add('hidden');
     } catch {
       this.clearAuth();
-      this.showAuthView();
+      this.loadingOverlay.classList.add('hidden');
     }
   }
 
@@ -220,13 +330,12 @@ class Thoughtify {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.detail || 'Login failed');
-      }
+      if (!res.ok) throw new Error(data.detail || 'Login failed');
 
       this.saveToken(data.token);
       await this.verifyToken(data.token);
+      this.closeAuth();
+      this.showDashboard();
       this.showToast('Welcome back! ✨', 'success');
     } catch (err) {
       this.showAuthError('login', err.message || 'Login failed. Check your credentials.');
@@ -246,7 +355,6 @@ class Thoughtify {
       this.showAuthError('register', 'Please fill in all fields.');
       return;
     }
-
     if (password.length < 6) {
       this.showAuthError('register', 'Password must be at least 6 characters.');
       return;
@@ -263,10 +371,7 @@ class Thoughtify {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.detail || 'Registration failed');
-      }
+      if (!res.ok) throw new Error(data.detail || 'Registration failed');
 
       this.showToast('Account created! Welcome to Thoughtify 🎉', 'success');
 
@@ -283,7 +388,8 @@ class Thoughtify {
 
   logout() {
     this.clearAuth();
-    this.showAuthView();
+    this.showLanding();
+    this.updateLandingNav(null);
     this.showToast('Signed out. Until next time ✦', 'success');
   }
 
@@ -292,7 +398,6 @@ class Thoughtify {
   getToken() { return localStorage.getItem(this.tokenKey); }
   saveToken(token) { localStorage.setItem(this.tokenKey, token); }
   saveUser(user) { localStorage.setItem(this.userKey, JSON.stringify(user)); }
-
   getUser() {
     try { return JSON.parse(localStorage.getItem(this.userKey)); }
     catch { return null; }
@@ -304,36 +409,16 @@ class Thoughtify {
     this.currentUser = null;
   }
 
-  /* ─── View Switching ─── */
-
-  showAuthView() {
-    this.authView.style.display = 'flex';
-    this.appView.style.display = 'none';
-    this.loadingOverlay.classList.add('hidden');
-    document.body.style.overflow = 'auto';
-    this.loginForm.reset();
-    this.registerForm.reset();
-    this.loginError.textContent = '';
-    this.registerError.textContent = '';
+  updateLandingNav(user) {
+    if (user) {
+      document.getElementById('landingNavActions').querySelectorAll('.btn-secondary, .btn-primary').forEach(b => b.style.display = 'none');
+      this.landingUserSignedin.style.display = 'flex';
+      this.landingUserAvatar.textContent = (user.name || user.username || '?').charAt(0).toUpperCase();
+    } else {
+      document.getElementById('landingNavActions').querySelectorAll('.btn-secondary, .btn-primary').forEach(b => b.style.display = '');
+      this.landingUserSignedin.style.display = 'none';
+    }
   }
-
-  showAppView() {
-    const user = this.currentUser || this.getUser();
-    if (!user) { this.showAuthView(); return; }
-
-    this.authView.style.display = 'none';
-    this.appView.style.display = 'block';
-
-    const initial = (user.name || user.username || '?').charAt(0).toUpperCase();
-    this.userAvatar.textContent = initial;
-    this.headerGreeting.textContent = `Hello, ${user.name || user.username}`;
-
-    this.loadingOverlay.classList.add('hidden');
-
-    this.loadActiveTab();
-  }
-
-  /* ─── Tab Switching ─── */
 
   switchAuthTab(tab) {
     [this.tabLogin, this.tabRegister].forEach(t => t.classList.remove('active'));
@@ -354,45 +439,6 @@ class Thoughtify {
     }
   }
 
-  /* ═══════════════════════════════════════════════════════
-     FEED TAB SWITCHING
-     ═══════════════════════════════════════════════════════ */
-
-  switchFeedTab(tab) {
-    if (tab === this.activeTab) return;
-    this.activeTab = tab;
-
-    // Update tab UI
-    this.feedTabs.forEach(t => {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    });
-
-    if (tab === 'global') {
-      this.tabFeedGlobal.classList.add('active');
-      this.tabFeedGlobal.setAttribute('aria-selected', 'true');
-      this.feedTitle.innerHTML = 'Global <span>Feed</span>';
-      this.renderThoughts(this.feed);
-    } else {
-      this.tabFeedMine.classList.add('active');
-      this.tabFeedMine.setAttribute('aria-selected', 'true');
-      this.feedTitle.innerHTML = 'My <span>Thoughts</span>';
-      this.renderThoughts(this.myThoughts);
-    }
-  }
-
-  loadActiveTab() {
-    if (this.activeTab === 'global') {
-      this.fetchFeed();
-    } else {
-      this.fetchMyThoughts();
-    }
-  }
-
-  /* ═══════════════════════════════════════════════════════
-     Auth UI Helpers
-     ═══════════════════════════════════════════════════════ */
-
   setAuthLoading(form, loading) {
     if (form === 'login') {
       this.loginBtn.disabled = loading;
@@ -411,15 +457,124 @@ class Thoughtify {
   }
 
   /* ═══════════════════════════════════════════════════════
-     THOUGHT CRUD
+     PUBLIC FEED
      ═══════════════════════════════════════════════════════ */
 
-  async fetchFeed() {
+  async fetchPublicFeed() {
+    this.publicSkeleton.style.display = 'grid';
+    this.publicEmpty.style.display = 'none';
+    this.publicError.style.display = 'none';
+
+    try {
+      const res = await fetch(`${this.apiBaseThought}/public`);
+      if (!res.ok) throw new Error('Failed to load feed');
+      this.publicThoughts = await res.json();
+      this.renderPublicFeed();
+    } catch {
+      this.publicError.style.display = 'block';
+      this.publicFeedGrid.innerHTML = '';
+    } finally {
+      this.publicSkeleton.style.display = 'none';
+    }
+  }
+
+  renderPublicFeed() {
+    this.publicSkeleton.style.display = 'none';
+    this.publicError.style.display = 'none';
+
+    if (!this.publicThoughts.length) {
+      this.publicEmpty.style.display = 'block';
+      this.publicFeedGrid.innerHTML = '';
+      this.publicFeedCount.textContent = '0';
+      return;
+    }
+
+    this.publicEmpty.style.display = 'none';
+    this.publicFeedCount.textContent = this.publicThoughts.length;
+
+    this.publicFeedGrid.innerHTML = '';
+    this.publicThoughts.forEach((thought, i) => {
+      const card = this.createPublicCard(thought, i);
+      this.publicFeedGrid.appendChild(card);
+    });
+
+    requestAnimationFrame(() => {
+      const cards = this.publicFeedGrid.querySelectorAll('.thought-card');
+      cards.forEach((card, i) => {
+        setTimeout(() => card.classList.add('visible'), i * 60);
+      });
+    });
+  }
+
+  createPublicCard(thought, index) {
+    const article = document.createElement('article');
+    article.className = 'thought-card';
+    article.style.transitionDelay = `${index * 60}ms`;
+
+    const dateStr = thought.created_at
+      ? new Date(thought.created_at).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        })
+      : 'just now';
+
+    article.innerHTML = `
+      <div class="thought-card-author">
+        <div class="author-avatar">${(thought.author_name || '?').charAt(0).toUpperCase()}</div>
+        <div class="author-info">
+          <span class="author-name">${this.escapeHtml(thought.author_name || thought.author_username || 'Anonymous')}</span>
+          <span class="author-username">${this.escapeHtml(thought.author_username || 'unknown')}</span>
+        </div>
+      </div>
+      <div class="thought-card-header">
+        <span class="thought-card-bullet"></span>
+        <h3 class="thought-card-title">${this.escapeHtml(thought.title)}</h3>
+      </div>
+      <div class="thought-card-content">${this.escapeHtml(thought.content)}</div>
+      <div class="thought-card-footer">
+        <span class="thought-card-date">${dateStr}</span>
+      </div>
+    `;
+
+    return article;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     DASHBOARD FEED
+     ═══════════════════════════════════════════════════════ */
+
+  switchFeedTab(tab) {
+    if (tab === this.activeTab) return;
+    this.activeTab = tab;
+
+    this.feedTabs.forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
+
+    if (tab === 'global') {
+      this.tabFeedGlobal.classList.add('active');
+      this.tabFeedGlobal.setAttribute('aria-selected', 'true');
+      this.feedTitle.innerHTML = 'Global <span>Feed</span>';
+      this.renderDashboardThoughts(this.feed);
+    } else {
+      this.tabFeedMine.classList.add('active');
+      this.tabFeedMine.setAttribute('aria-selected', 'true');
+      this.feedTitle.innerHTML = 'My <span>Thoughts</span>';
+      this.renderDashboardThoughts(this.myThoughts);
+    }
+  }
+
+  loadDashActiveTab() {
+    if (this.activeTab === 'global') this.fetchDashFeed();
+    else this.fetchMyThoughts();
+  }
+
+  async fetchDashFeed() {
     if (this.isFetching) return;
     this.isFetching = true;
-    this.showSkeleton(true);
-    this.hideEmptyState();
-    this.hideErrorState();
+    this.dashSkeleton.style.display = 'grid';
+    this.dashEmpty.style.display = 'none';
+    this.dashError.style.display = 'none';
 
     const token = this.getToken();
     if (!token) return;
@@ -429,17 +584,17 @@ class Thoughtify {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) {
-        if (res.status === 401) { this.clearAuth(); this.showAuthView(); return; }
-        throw new Error('Failed to fetch feed');
+        if (res.status === 401) { this.clearAuth(); this.showLanding(); return; }
+        throw new Error('Failed to load feed');
       }
       this.feed = await res.json();
-      if (this.activeTab === 'global') this.renderThoughts(this.feed);
+      if (this.activeTab === 'global') this.renderDashboardThoughts(this.feed);
       this.updateStats();
     } catch (err) {
-      if (this.activeTab === 'global') this.showErrorState();
+      if (this.activeTab === 'global') this.dashError.style.display = 'block';
       this.showToast(err.message || 'Failed to load feed.', 'error');
     } finally {
-      this.showSkeleton(false);
+      this.dashSkeleton.style.display = 'none';
       this.isFetching = false;
     }
   }
@@ -447,9 +602,9 @@ class Thoughtify {
   async fetchMyThoughts() {
     if (this.isFetching) return;
     this.isFetching = true;
-    this.showSkeleton(true);
-    this.hideEmptyState();
-    this.hideErrorState();
+    this.dashSkeleton.style.display = 'grid';
+    this.dashEmpty.style.display = 'none';
+    this.dashError.style.display = 'none';
 
     const token = this.getToken();
     if (!token) return;
@@ -459,29 +614,111 @@ class Thoughtify {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) {
-        if (res.status === 401) { this.clearAuth(); this.showAuthView(); return; }
-        throw new Error('Failed to fetch your thoughts');
+        if (res.status === 401) { this.clearAuth(); this.showLanding(); return; }
+        throw new Error('Failed to load your thoughts');
       }
       this.myThoughts = await res.json();
-      if (this.activeTab === 'mine') this.renderThoughts(this.myThoughts);
+      if (this.activeTab === 'mine') this.renderDashboardThoughts(this.myThoughts);
       this.updateStats();
     } catch (err) {
-      if (this.activeTab === 'mine') this.showErrorState();
+      if (this.activeTab === 'mine') this.dashError.style.display = 'block';
       this.showToast(err.message || 'Failed to load your thoughts.', 'error');
     } finally {
-      this.showSkeleton(false);
+      this.dashSkeleton.style.display = 'none';
       this.isFetching = false;
     }
   }
+
+  renderDashboardThoughts(thoughts) {
+    this.dashSkeleton.style.display = 'none';
+    this.dashError.style.display = 'none';
+
+    if (!thoughts || thoughts.length === 0) {
+      this.dashEmpty.style.display = 'block';
+      if (this.activeTab === 'global') {
+        this.dashEmptyTitle.textContent = 'The Feed is Quiet';
+        this.dashEmptyText.textContent = 'No thoughts have been shared yet. Be the first to spark a conversation!';
+      } else {
+        this.dashEmptyTitle.textContent = 'No Thoughts Yet';
+        this.dashEmptyText.textContent = 'Your mind is a quiet garden. Plant your first thought above.';
+      }
+      this.grid.innerHTML = '';
+      return;
+    }
+
+    this.dashEmpty.style.display = 'none';
+    this.grid.innerHTML = '';
+    thoughts.forEach((thought, index) => {
+      const card = this.createDashCard(thought, index);
+      this.grid.appendChild(card);
+    });
+
+    requestAnimationFrame(() => {
+      const cards = this.grid.querySelectorAll('.thought-card');
+      cards.forEach((card, i) => {
+        setTimeout(() => card.classList.add('visible'), i * 60);
+      });
+    });
+  }
+
+  createDashCard(thought, index) {
+    const article = document.createElement('article');
+    article.className = 'thought-card';
+    article.style.transitionDelay = `${index * 60}ms`;
+
+    const isOwn = this.currentUser && thought.user_id === this.currentUser.id;
+
+    const dateStr = thought.created_at
+      ? new Date(thought.created_at).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        })
+      : 'just now';
+
+    article.innerHTML = `
+      <div class="thought-card-author">
+        <div class="author-avatar">${(thought.author_name || '?').charAt(0).toUpperCase()}</div>
+        <div class="author-info">
+          <span class="author-name">${this.escapeHtml(thought.author_name || thought.author_username || 'Unknown')}</span>
+          <span class="author-username">${this.escapeHtml(thought.author_username || 'unknown')}</span>
+        </div>
+      </div>
+      <div class="thought-card-header">
+        <span class="thought-card-bullet"></span>
+        <h3 class="thought-card-title">${this.escapeHtml(thought.title)}</h3>
+      </div>
+      <div class="thought-card-content">${this.escapeHtml(thought.content)}</div>
+      <div class="thought-card-footer">
+        <span class="thought-card-date">${dateStr}</span>
+        <div class="thought-card-footer-right">
+          <span class="thought-card-author-tag" style="${isOwn ? '' : 'display: none;'}">you</span>
+          <div class="thought-card-actions" style="${isOwn ? '' : 'display: none;'}">
+            <button class="btn btn-ghost btn-icon edit-btn" title="Edit" aria-label="Edit thought">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn btn-ghost btn-icon delete-btn" title="Delete" aria-label="Delete thought">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const editBtn = article.querySelector('.edit-btn');
+    if (editBtn) editBtn.addEventListener('click', (e) => { e.stopPropagation(); this.enterEditMode(thought); });
+
+    const deleteBtn = article.querySelector('.delete-btn');
+    if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.confirmDelete(thought); });
+
+    return article;
+  }
+
+  /* ─── CRUD ─── */
 
   async createThought(title, content) {
     const token = this.getToken();
     const res = await fetch(`${this.apiBaseThought}/create`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ title, content })
     });
     if (!res.ok) {
@@ -495,10 +732,7 @@ class Thoughtify {
     const token = this.getToken();
     const res = await fetch(`${this.apiBaseThought}/update/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ title, content })
     });
     if (!res.ok) {
@@ -521,19 +755,11 @@ class Thoughtify {
     return res.json();
   }
 
-  /* ─── Form Handlers ─── */
-
   async handleSubmit(e) {
     e.preventDefault();
-
     const title = this.titleInput.value.trim();
     const content = this.contentInput.value.trim();
-
-    if (!title || !content) {
-      this.showToast('Please fill in both title and content.', 'error');
-      return;
-    }
-
+    if (!title || !content) { this.showToast('Please fill in both title and content.', 'error'); return; }
     if (this.isSubmitting) return;
     this.setSubmitting(true);
 
@@ -545,20 +771,12 @@ class Thoughtify {
         await this.createThought(title, content);
         this.showToast('New thought captured! 🎉', 'success');
       }
-
       this.form.reset();
       this.cancelEdit();
-      // Refresh both views
-      await Promise.all([this.fetchFeed(), this.fetchMyThoughts()]);
-      // Switch to "My Thoughts" after creating
+      await Promise.all([this.fetchDashFeed(), this.fetchMyThoughts(), this.fetchPublicFeed()]);
       if (!this.editingId) this.switchFeedTab('mine');
     } catch (err) {
-      this.showToast(
-        err.message || (this.editingId
-          ? 'Failed to update thought. Try again.'
-          : 'Failed to share thought. Try again.'),
-        'error'
-      );
+      this.showToast(err.message || 'Failed to save thought.', 'error');
     } finally {
       this.setSubmitting(false);
     }
@@ -573,8 +791,6 @@ class Thoughtify {
     this.submitSpinner.style.display = submitting ? 'inline-block' : 'none';
   }
 
-  /* ─── Edit Mode ─── */
-
   enterEditMode(thought) {
     this.editingId = thought.id;
     this.titleInput.value = thought.title;
@@ -582,10 +798,8 @@ class Thoughtify {
     this.submitBtnText.textContent = 'Update Thought';
     this.cancelEditBtn.style.display = 'inline-flex';
     this.formTitle.innerHTML = 'Edit <span>Thought</span>';
-
     this.formWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     this.titleInput.focus();
-
     this.formWrap.classList.remove('collapsed');
     this.collapseFormBtn.classList.remove('collapsed');
   }
@@ -598,125 +812,16 @@ class Thoughtify {
     this.formTitle.innerHTML = 'Capture a <span>Thought</span>';
   }
 
-  /* ─── Form Collapse ─── */
-
   toggleFormCollapse() {
     this.formWrap.classList.toggle('collapsed');
     this.collapseFormBtn.classList.toggle('collapsed');
   }
 
-  /* ─── Render ─── */
-
-  renderThoughts(thoughts) {
-    this.hideEmptyState();
-    this.hideErrorState();
-    this.hideSkeleton();
-
-    if (!thoughts || thoughts.length === 0) {
-      this.showEmptyState();
-      this.grid.innerHTML = '';
-      return;
-    }
-
-    this.grid.innerHTML = '';
-    thoughts.forEach((thought, index) => {
-      const card = this.createCard(thought, index);
-      this.grid.appendChild(card);
-    });
-
-    requestAnimationFrame(() => {
-      const cards = this.grid.querySelectorAll('.thought-card');
-      cards.forEach((card, i) => {
-        setTimeout(() => { card.classList.add('visible'); }, i * 60);
-      });
-    });
-  }
-
-  createCard(thought, index) {
-    const article = document.createElement('article');
-    article.className = 'thought-card';
-    article.style.transitionDelay = `${index * 60}ms`;
-
-    const isOwn = this.currentUser && thought.user_id === this.currentUser.id;
-
-    const dateStr = thought.created_at
-      ? new Date(thought.created_at).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : 'just now';
-
-    article.innerHTML = `
-      <!-- Author -->
-      <div class="thought-card-author">
-        <div class="author-avatar">${(thought.author_name || '?').charAt(0).toUpperCase()}</div>
-        <div class="author-info">
-          <span class="author-name">${this.escapeHtml(thought.author_name || thought.author_username || 'Unknown')}</span>
-          <span class="author-username">${this.escapeHtml(thought.author_username || 'unknown')}</span>
-        </div>
-      </div>
-
-      <!-- Header -->
-      <div class="thought-card-header">
-        <span class="thought-card-bullet"></span>
-        <h3 class="thought-card-title">${this.escapeHtml(thought.title)}</h3>
-      </div>
-
-      <!-- Content -->
-      <div class="thought-card-content">${this.escapeHtml(thought.content)}</div>
-
-      <!-- Footer -->
-      <div class="thought-card-footer">
-        <span class="thought-card-date">${dateStr}</span>
-        <div class="thought-card-footer-right">
-          <span class="thought-card-author-tag" style="${isOwn ? '' : 'display: none;'}" data-own-tag>you</span>
-          <div class="thought-card-actions" style="${isOwn ? '' : 'display: none;'}" data-own-actions>
-            <button class="btn btn-ghost btn-icon edit-btn" title="Edit" aria-label="Edit thought">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="btn btn-ghost btn-icon delete-btn" title="Delete" aria-label="Delete thought">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Edit
-    const editBtn = article.querySelector('.edit-btn');
-    if (editBtn) {
-      editBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.enterEditMode(thought);
-      });
-    }
-
-    // Delete
-    const deleteBtn = article.querySelector('.delete-btn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.confirmDelete(thought);
-      });
-    }
-
-    return article;
-  }
-
-  /* ─── Delete Confirmation Modal ─── */
-
   confirmDelete(thought) {
     this.modalTitle.textContent = 'Delete Thought';
     this.modalBody.innerHTML = `
-      <p style="margin-bottom: 0.5rem;">
-        Are you sure you want to delete <strong>"${this.escapeHtml(thought.title)}"</strong>?
-      </p>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">
-        This action cannot be undone.
-      </p>
+      <p style="margin-bottom: 0.5rem;">Are you sure you want to delete <strong>"${this.escapeHtml(thought.title)}"</strong>?</p>
+      <p style="color: var(--text-muted); font-size: 0.85rem;">This action cannot be undone.</p>
     `;
     this.modalConfirm.textContent = 'Delete';
     this.modalConfirm.className = 'btn btn-danger';
@@ -724,29 +829,25 @@ class Thoughtify {
       try {
         await this.deleteThought(thought.id);
         this.showToast('Thought deleted.', 'success');
-        await Promise.all([this.fetchFeed(), this.fetchMyThoughts()]);
-        if (this.activeTab === 'global') this.switchFeedTab('global');
+        await Promise.all([this.fetchDashFeed(), this.fetchMyThoughts(), this.fetchPublicFeed()]);
       } catch (err) {
         this.showToast(err.message || 'Failed to delete thought.', 'error');
       }
     };
-
     this.openModal();
   }
 
-  /* ─── Modal Control ─── */
+  /* ─── Modal ─── */
 
   openModal() {
     this.modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-
     const handleConfirm = async () => {
       this.modalConfirm.removeEventListener('click', handleConfirm);
       this.closeModal();
       if (this.modalAction) await this.modalAction();
       this.modalAction = null;
     };
-
     this.modalConfirm.addEventListener('click', handleConfirm);
   }
 
@@ -767,58 +868,17 @@ class Thoughtify {
       : `${mineCount} thought${mineCount !== 1 ? 's' : ''}`;
   }
 
-  /* ─── Empty State ─── */
-
-  showEmptyState() {
-    this.emptyState.style.display = 'block';
-    this.grid.innerHTML = '';
-    this.hideSkeleton();
-
-    if (this.activeTab === 'global') {
-      this.emptyStateTitle.textContent = 'The Feed is Quiet';
-      this.emptyStateText.textContent = 'No thoughts have been shared yet. Be the first to spark a conversation!';
-    } else {
-      this.emptyStateTitle.textContent = 'No Thoughts Yet';
-      this.emptyStateText.textContent = 'Your mind is a quiet garden. Plant your first thought above.';
-    }
-  }
-
-  hideEmptyState() { this.emptyState.style.display = 'none'; }
-
-  /* ─── Error State ─── */
-
-  showErrorState() {
-    this.errorState.style.display = 'block';
-    this.grid.innerHTML = '';
-    this.hideSkeleton();
-    this.hideEmptyState();
-  }
-
-  hideErrorState() { this.errorState.style.display = 'none'; }
-
-  /* ─── Skeleton ─── */
-
-  showSkeleton(show) { this.skeleton.style.display = show ? 'grid' : 'none'; }
-  hideSkeleton() { this.skeleton.style.display = 'none'; }
-
-  /* ─── Toast System ─── */
+  /* ─── Toast ─── */
 
   showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-
     const iconMap = {
       success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
       error: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
     };
-
-    toast.innerHTML = `
-      <span class="toast-icon">${iconMap[type] || ''}</span>
-      <span>${message}</span>
-    `;
-
+    toast.innerHTML = `<span class="toast-icon">${iconMap[type] || ''}</span><span>${message}</span>`;
     this.toastContainer.appendChild(toast);
-
     setTimeout(() => {
       toast.classList.add('toast-removing');
       setTimeout(() => toast.remove(), 300);

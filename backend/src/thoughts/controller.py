@@ -20,6 +20,30 @@ def create_thought(body: thought_schema, db: Session, user: UserModel):
     return new_thought
 
 
+def get_public_feed(db: Session):
+    """Public feed — no auth required. Shows recent thoughts."""
+    thoughts = (
+        db.query(thought_model)
+        .options(joinedload(thought_model.author))
+        .filter(thought_model.user_id.isnot(None))
+        .order_by(thought_model.id.desc())
+        .limit(50)
+        .all()
+    )
+    return [
+        thought_feed_schema(
+            id=t.id,
+            title=t.title,
+            content=t.content[:300] + ("..." if len(t.content or "") > 300 else ""),
+            user_id=t.user_id,
+            created_at=t.created_at,
+            author_name=t.author.name if t.author else "",
+            author_username=t.author.username if t.author else "",
+        )
+        for t in thoughts
+    ]
+
+
 def get_global_feed(db: Session, user: UserModel):
     """Return all thoughts from all users, newest first, with author info."""
     thoughts = (
