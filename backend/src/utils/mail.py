@@ -17,15 +17,18 @@ conf = ConnectionConfig(
 
 
 
-async def send_email(emails:List[str]):
+async def send_email(emails: List[str]):
     html = """<p>Thankyou for Registration on Thoughtify app</p> """
 
     message = MessageSchema(
         subject="Registration Confirmation",
-        recipients=[emails],
+        recipients=[emails] if isinstance(emails, str) else emails,
         body=html,
         subtype=MessageType.html)
 
     fm = FastMail(conf)
-    await fm.send_message(message)
-    return {"message": "email sent successfully"}
+    try:
+        await fm.send_message(message)
+        print(f"✅ Email sent to {emails}")
+    except Exception as e:
+        print(f"❌ Email failed to {emails}: {e}")
