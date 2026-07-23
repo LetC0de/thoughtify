@@ -1449,6 +1449,48 @@ body::after {
   font-size: 0.75rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+/* ─── Card footer actions (like, comment) ─── */
+.card-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.05rem;
+}
+
+.card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+}
+
+.card-action-btn:hover {
+  background: var(--bg-surface);
+  color: var(--accent-light);
+}
+
+.card-action-btn:hover svg {
+  transform: scale(1.15);
+}
+
+.card-action-btn svg {
+  transition: transform 0.2s var(--ease-spring);
+}
+
+/* Like heart turns pink on hover */
+.card-action-btn:first-child:hover {
+  color: #e85d75;
+  background: rgba(232, 93, 117, 0.08);
 }
 
 /* ─── "you" tag on own posts in global feed ─── */
@@ -1901,6 +1943,8 @@ body::after {
   .thought-card-title { font-size: 1rem; }
   .thought-card-content { font-size: 0.85rem; -webkit-line-clamp: 3; }
   .author-avatar { width: 24px; height: 24px; font-size: 0.6rem; }
+  .card-action-btn { width: 28px; height: 28px; }
+  .card-action-btn svg { width: 14px; height: 14px; }
   .author-name { font-size: 0.78rem; }
   .author-username { font-size: 0.68rem; }
   .form-input, .form-textarea { padding: 0.7rem 0.85rem; font-size: 0.9rem; }
