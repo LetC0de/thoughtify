@@ -1358,6 +1358,8 @@ body::after {
   overflow: hidden;
   opacity: 0;
   transform: translateY(20px);
+  display: flex;
+  flex-direction: column;
 }
 
 .thought-card--clickable {
@@ -1429,6 +1431,7 @@ body::after {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex: 1;
 }
 
 .thought-card-footer {
