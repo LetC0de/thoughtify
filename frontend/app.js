@@ -138,6 +138,11 @@ class Thoughtify {
     this.modalCancel = document.getElementById('modalCancel');
     this.modalAction = null;
 
+    // Bottom tabs
+    this.bottomTabs = document.getElementById('bottomTabs');
+    this.tabNavFeed = document.getElementById('tabNavFeed');
+    this.tabNavProfile = document.getElementById('tabNavProfile');
+
     // Toast
     this.toastContainer = document.getElementById('toastContainer');
   }
@@ -209,6 +214,10 @@ class Thoughtify {
       this.titleInput.focus();
     });
     this.dashRetryBtn.addEventListener('click', () => this.fetchMyThoughts());
+
+    // Bottom tab nav
+    this.tabNavFeed.addEventListener('click', () => this.switchBottomTab('feed'));
+    this.tabNavProfile.addEventListener('click', () => this.switchBottomTab('profile'));
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -218,6 +227,8 @@ class Thoughtify {
   showLanding() {
     this.appView.style.display = 'none';
     this.landingView.style.display = 'block';
+    // Only show bottom tabs if logged in
+    this.bottomTabs.style.display = this.currentUser ? 'flex' : 'none';
     document.body.style.overflow = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -225,6 +236,7 @@ class Thoughtify {
   showDashboard() {
     this.landingView.style.display = 'none';
     this.appView.style.display = 'block';
+    this.bottomTabs.style.display = 'flex';
     document.body.style.overflow = '';
 
     const user = this.currentUser || this.getUser();
@@ -239,8 +251,25 @@ class Thoughtify {
     // Update landing nav
     this.landingUserAvatar.textContent = initial;
 
+    // Profile tab active by default
+    this.tabNavFeed.classList.remove('active');
+    this.tabNavProfile.classList.add('active');
+
     // Load my thoughts
     this.fetchMyThoughts();
+  }
+
+  /* ─── Bottom Tab Navigation ─── */
+
+  switchBottomTab(tab) {
+    [this.tabNavFeed, this.tabNavProfile].forEach(t => t.classList.remove('active'));
+    if (tab === 'feed') {
+      this.tabNavFeed.classList.add('active');
+      this.showLanding();
+    } else {
+      this.tabNavProfile.classList.add('active');
+      this.showDashboard();
+    }
   }
 
   /* ─── Auth Overlay ─── */
