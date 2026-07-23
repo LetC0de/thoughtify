@@ -19,7 +19,6 @@ def get_password_hash(password):
 async def register_user(body: UserSchema, db: Session, bg_task:BackgroundTasks):
 
     is_username_exists = db.query(UserModel).filter(UserModel.username == body.username).first()
-    
 
     if is_username_exists:
         raise HTTPException(status_code=400, detail="Username already exists")
