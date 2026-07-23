@@ -1825,214 +1825,92 @@ body::after {
 }
 
 /* ═══════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — Comprehensive
    ═══════════════════════════════════════════════════════ */
+
+/* ── Tablet & smaller laptops ── */
 @media (max-width: 1024px) {
-  .hero {
-    grid-template-columns: 1fr;
-    min-height: auto;
-    padding: 2rem 2rem 0;
-    text-align: center;
-  }
-
-  .hero-subtitle {
-    margin: 0 auto 2rem;
-  }
-
-  .hero-actions {
-    justify-content: center;
-  }
-
-  .hero-visual {
-    min-height: 280px;
-    order: -1;
-  }
-
-  .hero-title {
-    font-size: 2.8rem;
-  }
-
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .hero { grid-template-columns: 1fr; min-height: auto; padding: 2rem 1.5rem 0; text-align: center; }
+  .hero-subtitle { margin: 0 auto 2rem; }
+  .hero-actions { justify-content: center; }
+  .hero-visual { min-height: 260px; order: -1; }
+  .hero-title { font-size: 2.6rem; }
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── Phone landscape & large phones ── */
 @media (max-width: 768px) {
-  .app-view-inner {
-    padding: 0 1rem;
-  }
-
-  .app-header {
-    padding: 1rem 0 0;
-  }
-
-  .header-inner {
-    padding: 0.65rem 1.25rem;
-    border-radius: var(--radius-lg);
-  }
-
-  .logo-text {
-    font-size: 1.1rem;
-  }
-
-  .main {
-    padding: 0.75rem 0 2rem;
-  }
-
-  .stats-bar {
-    padding: 1rem;
-    gap: 1rem;
-  }
-
-  .stat-number {
-    font-size: 1.4rem;
-  }
-
-  .thought-form {
-    padding: 1.25rem;
-  }
-
-  .thoughts-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .thought-card-actions {
-    opacity: 1;
-  }
-
-  .toast-container {
-    left: 1rem;
-    right: 1rem;
-    bottom: 1rem;
-  }
-
-  .toast {
-    min-width: auto;
-    max-width: none;
-  }
-
-  .section-title {
-    font-size: 1.35rem;
-  }
-
-  .auth-card {
-    padding: 2rem 1.5rem;
-  }
-
-  .feed-tabs {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .feed-tab {
-    flex: 1;
-    justify-content: center;
-    padding: 0.55rem 0.8rem;
-    font-size: 0.8rem;
-  }
-
-  .feed-tab svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .landing-nav-inner {
-    padding: 0.65rem 1.25rem;
-    margin: 0 1rem;
-  }
-
-  .hero {
-    padding: 1.5rem 1.25rem 0;
-  }
-
-  .hero-title {
-    font-size: 2.2rem;
-  }
-
-  .hero-visual {
-    display: none;
-  }
-
-  .public-feed-section {
-    padding: 0 1rem;
-  }
-
-  .features {
-    padding: 0 1rem 2rem;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-welcome-title {
-    font-size: 1.5rem;
-  }
-
-  .landing-footer {
-    padding: 0 1rem 1.5rem;
-  }
+  .app-view-inner, .public-feed-section, .features { padding: 0 1rem; }
+  .landing-nav-inner { padding: 0.6rem 1rem; margin: 0 0.75rem; border-radius: 100px; }
+  .app-header { padding: 0.75rem 0 0; }
+  .header-inner { padding: 0.55rem 1rem; border-radius: var(--radius-lg); }
+  .main { padding: 0.75rem 0 2rem; }
+  .logo-text { font-size: 1rem; }
+  .section-title { font-size: 1.25rem; }
+  .hero-title { font-size: 2rem; }
+  .hero-subtitle { font-size: 0.95rem; }
+  .dashboard-welcome-title { font-size: 1.4rem; }
+  .hero { padding: 1.5rem 1rem 0; }
+  .hero-visual { display: none; }
+  .features-grid { grid-template-columns: 1fr; }
+  .stats-bar { padding: 0.85rem 1rem; gap: 0.75rem; }
+  .stat-number { font-size: 1.3rem; }
+  .thoughts-grid { grid-template-columns: 1fr; }
+  .thought-card { padding: 1.1rem 1.1rem 1rem; }
+  .thought-card-actions { opacity: 1; }
+  .feed-tabs { width: 100%; justify-content: center; }
+  .feed-tab { flex: 1; justify-content: center; padding: 0.5rem 0.6rem; font-size: 0.78rem; }
+  .feed-tab svg { width: 14px; height: 14px; }
+  .thought-form { padding: 1.1rem; }
+  .form-footer { flex-direction: column; align-items: stretch; }
+  .form-actions { flex-direction: row; }
+  .form-hint { font-size: 0.72rem; }
+  .auth-card { padding: 2rem 1.25rem; }
+  .auth-container { padding: 1rem; }
+  .toast-container { left: 0.75rem; right: 0.75rem; bottom: 0.75rem; }
+  .toast { min-width: auto; max-width: none; font-size: 0.85rem; }
+  .dashboard-welcome { padding: 1.5rem 0 0.75rem; }
+  .landing-footer { padding: 0 1rem 1.5rem; }
+  .landing-footer-text { font-size: 0.72rem; }
+  .features { padding: 0 1rem 2rem; }
+  .feature-card { padding: 1.5rem 1.25rem; }
+  .empty-state { padding: 2.5rem 1rem; }
+  .empty-state-icon { font-size: 2.5rem; }
+  .empty-state-title { font-size: 1.2rem; }
+  .skeleton-card { height: 160px; padding: 1.1rem; }
 }
 
+/* ── Small phones ── */
 @media (max-width: 480px) {
-  .stats-bar {
-    flex-direction: row;
-    gap: 0.75rem;
-  }
-
-  .stat-divider {
-    height: 24px;
-  }
-
-  .form-footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .modal {
-    padding: 1.5rem;
-  }
-
-  .auth-card {
-    padding: 1.5rem 1.25rem;
-  }
-
-  .landing-nav-actions .btn {
-    padding: 0.35rem 0.75rem;
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .stats-bar {
-    flex-direction: row;
-    gap: 0.75rem;
-  }
-
-  .stat-divider {
-    height: 24px;
-  }
-
-  .form-footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .modal {
-    padding: 1.5rem;
-  }
-
-  .auth-card {
-    padding: 1.5rem 1.25rem;
-  }
+  .landing-nav-inner { padding: 0.45rem 0.8rem; margin: 0 0.5rem; }
+  .landing-nav-actions .btn { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
+  .hero-title { font-size: 1.6rem; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn { width: 100%; }
+  .hero-badge { font-size: 0.7rem; padding: 0.25rem 0.75rem; }
+  .stats-bar { gap: 0.5rem; padding: 0.7rem 0.75rem; }
+  .stat-divider { height: 20px; }
+  .stat-number { font-size: 1.1rem; }
+  .section-title { font-size: 1.1rem; }
+  .section-count { font-size: 0.75rem; padding: 0.2rem 0.7rem; }
+  .auth-card { padding: 1.25rem 1rem; border-radius: var(--radius-lg); }
+  .auth-logo-text { font-size: 1.3rem; }
+  .auth-tab { font-size: 0.78rem; padding: 0.5rem 0.75rem; }
+  .modal { padding: 1.25rem; border-radius: var(--radius-md); }
+  .thought-card { padding: 0.9rem; }
+  .thought-card-title { font-size: 1rem; }
+  .thought-card-content { font-size: 0.85rem; -webkit-line-clamp: 3; }
+  .author-avatar { width: 24px; height: 24px; font-size: 0.6rem; }
+  .author-name { font-size: 0.78rem; }
+  .author-username { font-size: 0.68rem; }
+  .form-input, .form-textarea { padding: 0.7rem 0.85rem; font-size: 0.9rem; }
+  .form-textarea { min-height: 90px; }
+  .btn { padding: 0.55rem 1rem; font-size: 0.82rem; }
+  .feature-card { padding: 1.25rem; }
+  .feature-icon { font-size: 1.7rem; }
+  .feature-title { font-size: 1rem; }
+  .feature-text { font-size: 0.82rem; }
+  .toast { padding: 0.7rem 1rem; font-size: 0.8rem; }
 }
 
 /* ─── Focus visible ─── */
