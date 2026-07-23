@@ -4,7 +4,9 @@
 
 class PostPage {
   constructor() {
-    const base = window.THOUGHTIFY_API || 'http://127.0.0.1:8000';
+    const base = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+      ? 'http://127.0.0.1:8000'
+      : 'https://thoughtify-lmgv.onrender.com';
     this.apiThought = `${base}/thought`;
     this.tokenKey = 'thoughtify_token';
     this.userKey = 'thoughtify_user';
