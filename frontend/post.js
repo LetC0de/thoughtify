@@ -37,6 +37,7 @@ class PostPage {
     this.postArticle = document.getElementById('postArticle');
     this.postSkeleton = document.getElementById('postSkeleton');
     this.postError = document.getElementById('postError');
+    this.postMore = document.getElementById('postMore');
 
     this.postTitle = document.getElementById('postTitle');
     this.postContent = document.getElementById('postContent');
@@ -44,11 +45,17 @@ class PostPage {
     this.postAuthorName = document.getElementById('postAuthorName');
     this.postAuthorUsername = document.getElementById('postAuthorUsername');
     this.postDate = document.getElementById('postDate');
+    this.postReadingTime = document.getElementById('postReadingTime');
+    this.postTags = document.getElementById('postTags');
+    this.postOwnerActions = document.getElementById('postOwnerActions');
 
-    // Actions
+    // Action buttons
     this.postEditBtn = document.getElementById('postEditBtn');
     this.postDeleteBtn = document.getElementById('postDeleteBtn');
     this.postLikeBtn = document.getElementById('postLikeBtn');
+    this.postLikeCount = document.getElementById('postLikeCount');
+    this.postCommentBtn = document.getElementById('postCommentBtn');
+    this.postCommentCount = document.getElementById('postCommentCount');
     this.postShareBtn = document.getElementById('postShareBtn');
 
     // Toast
@@ -66,6 +73,7 @@ class PostPage {
 
     this.postEditBtn?.addEventListener('click', () => this.handleEdit());
     this.postDeleteBtn?.addEventListener('click', () => this.handleDelete());
+    this.postLikeBtn?.addEventListener('click', () => this.handleLike());
     this.postShareBtn?.addEventListener('click', () => this.handleShare());
   }
 
@@ -105,48 +113,53 @@ class PostPage {
   /* ─── Render ─── */
 
   render() {
-    document.title = `${this.escapeHtml(this.thought.title)} — FreeSpeak`;
+    const t = this.thought;
+    document.title = `${this.escapeHtml(t.title)} — FreeSpeak`;
 
-    // Author
-    const initial = (this.thought.author_name || '?').charAt(0).toUpperCase();
+    // Avatar
+    const initial = (t.author_name || '?').charAt(0).toUpperCase();
     this.postAuthorAvatar.textContent = initial;
-    this.postAuthorName.textContent = this.thought.author_name || this.thought.author_username || 'Unknown';
-    this.postAuthorUsername.textContent = `@${this.thought.author_username || 'unknown'}`;
+
+    // Author name + username
+    this.postAuthorName.textContent = t.author_name || t.author_username || 'Unknown';
+    this.postAuthorUsername.textContent = `@${t.author_username || 'unknown'}`;
 
     // Date
-    const dateStr = this.thought.created_at
-      ? new Date(this.thought.created_at).toLocaleDateString('en-US', {
-          year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    const dateStr = t.created_at
+      ? new Date(t.created_at).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'long', day: 'numeric'
         })
       : 'Just now';
     this.postDate.textContent = dateStr;
 
-    // Title & content
-    this.postTitle.textContent = this.thought.title;
-    this.postContent.textContent = this.thought.content;
+    // Reading time
+    const wordsPerMin = 200;
+    const wordCount = (t.content || '').split(/\s+/).filter(Boolean).length;
+    const mins = Math.max(1, Math.ceil(wordCount / wordsPerMin));
+    this.postReadingTime.textContent = `${mins} min read`;
+
+    // Title & body
+    this.postTitle.textContent = t.title;
+    this.postContent.textContent = t.content;
 
     // Owner actions
-    const isOwn = this.currentUser && this.thought.user_id === this.currentUser.id;
-    if (isOwn) {
-      this.postEditBtn.style.display = 'inline-flex';
-      this.postDeleteBtn.style.display = 'inline-flex';
-    }
+    const isOwn = this.currentUser && t.user_id === this.currentUser.id;
+    this.postOwnerActions.style.display = isOwn ? 'flex' : 'none';
 
-    // Show article
+    // Show the article
     this.postArticle.style.display = 'block';
+    this.postMore.style.display = 'block';
   }
 
-  /* ─── Actions (Future-ready) ─── */
+  /* ─── Actions ─── */
 
   handleEdit() {
-    // Future: navigate to edit mode or open edit modal
     this.showToast('Edit coming soon', 'success');
   }
 
   async handleDelete() {
     const token = this.getToken();
     if (!token || !this.thought) return;
-
     if (!confirm(`Delete "${this.thought.title}"? This cannot be undone.`)) return;
 
     try {
@@ -162,13 +175,17 @@ class PostPage {
     }
   }
 
+  handleLike() {
+    this.showToast('Likes coming soon!', 'success');
+  }
+
   handleShare() {
     const url = window.location.href;
     if (navigator.share) {
       navigator.share({ title: this.thought.title, url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url).then(() => {
-        this.showToast('Link copied to clipboard!', 'success');
+        this.showToast('Link copied!', 'success');
       });
     }
   }
