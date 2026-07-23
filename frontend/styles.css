@@ -1960,6 +1960,12 @@ body::after {
 @media (max-width: 480px) {
   .landing-nav-inner { padding: 0.45rem 0.8rem; margin: 0 0.5rem; }
   .landing-nav-actions .btn { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
+  .bottom-tabs { padding: 0.25rem 1rem; padding-bottom: max(0.25rem, env(safe-area-inset-bottom)); }
+  .bottom-tab { padding: 0.25rem 1rem; gap: 0.1rem; }
+  .bottom-tab svg { width: 18px; height: 18px; }
+  .bottom-tab-label { font-size: 0.58rem; }
+  .bottom-tab.active::after { width: 18px; height: 2px; top: -0.25rem; }
+  .app-view { padding-bottom: 2.8rem; }
   .hero-title { font-size: 1.6rem; }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions .btn { width: 100%; }
@@ -2018,23 +2024,24 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  padding: 0.5rem 2rem;
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  background: rgba(20, 16, 12, 0.88);
-  backdrop-filter: blur(28px) saturate(1.4);
-  -webkit-backdrop-filter: blur(28px) saturate(1.4);
-  border-top: 1px solid var(--border-subtle);
+  padding: 0.4rem 2rem;
+  padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+  background: rgba(20, 16, 12, 0.92);
+  backdrop-filter: blur(32px) saturate(1.6);
+  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+  border-top: 1px solid rgba(212, 148, 58, 0.12);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4), 0 -1px 0 rgba(212, 148, 58, 0.08);
 }
 
 .bottom-tab {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0.4rem 1.5rem;
+  gap: 0.15rem;
+  padding: 0.35rem 1.5rem;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.25s var(--ease-out);
@@ -2043,31 +2050,45 @@ body::after {
 
 .bottom-tab:hover {
   color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .bottom-tab.active {
   color: var(--accent-light);
+  background: rgba(212, 148, 58, 0.08);
+  text-shadow: 0 0 20px rgba(212, 148, 58, 0.2);
 }
 
 .bottom-tab.active::after {
   content: '';
   position: absolute;
-  top: -0.5rem;
+  top: -0.35rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
+  width: 24px;
   height: 3px;
   border-radius: 2px;
   background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.bottom-tab svg {
+  transition: transform 0.2s var(--ease-spring);
+  filter: drop-shadow(0 0 2px transparent);
+}
+
+.bottom-tab.active svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
 }
 
 .bottom-tab-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
-/* Add bottom padding to app-view so content isn't hidden behind tabs */
+/* Add bottom padding so content isn't hidden behind tabs */
 .app-view {
-  padding-bottom: 4rem;
+  padding-bottom: 3.5rem;
 }
