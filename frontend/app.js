@@ -72,7 +72,7 @@ class Thoughtify {
     this.publicSkeleton = document.getElementById('publicSkeleton');
     this.publicEmpty = document.getElementById('publicEmpty');
     this.publicError = document.getElementById('publicError');
-    this.publicFeedCount = document.getElementById('publicFeedCount');
+    // this.publicFeedCount removed — not shown on landing
     this.publicEmptyBtn = document.getElementById('publicEmptyBtn');
     this.publicRetryBtn = document.getElementById('publicRetryBtn');
 
@@ -475,12 +475,10 @@ class Thoughtify {
     if (!this.publicThoughts.length) {
       this.publicEmpty.style.display = 'block';
       this.publicFeedGrid.innerHTML = '';
-      this.publicFeedCount.textContent = '0';
       return;
     }
 
     this.publicEmpty.style.display = 'none';
-    this.publicFeedCount.textContent = this.publicThoughts.length;
 
     this.publicFeedGrid.innerHTML = '';
     this.publicThoughts.forEach((thought, i) => {
