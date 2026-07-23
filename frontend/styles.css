@@ -1974,11 +1974,14 @@ body::after {
   .auth-tab { font-size: 0.78rem; padding: 0.5rem 0.75rem; }
   .modal { padding: 1.25rem; border-radius: var(--radius-md); }
   .thought-card { padding: 0.9rem; }
+  .thought-card-footer { flex-wrap: wrap; gap: 0.3rem; }
   .thought-card-title { font-size: 1rem; }
   .thought-card-content { font-size: 0.85rem; -webkit-line-clamp: 3; }
   .author-avatar { width: 24px; height: 24px; font-size: 0.6rem; }
-  .card-action-btn { width: 28px; height: 28px; }
-  .card-action-btn svg { width: 14px; height: 14px; }
+  .card-action-btn { width: auto; height: 32px; padding: 0 0.4rem; gap: 0.2rem; }
+  .card-action-btn svg { width: 15px; height: 15px; }
+  .card-like-btn { width: auto; padding: 0 0.4rem; }
+  .like-count { font-size: 0.7rem; }
   .author-name { font-size: 0.78rem; }
   .author-username { font-size: 0.68rem; }
   .form-input, .form-textarea { padding: 0.7rem 0.85rem; font-size: 0.9rem; }
