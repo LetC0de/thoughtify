@@ -20,6 +20,28 @@ def create_thought(body: thought_schema, db: Session, user: UserModel):
     return new_thought
 
 
+def get_thought_by_id(thought_id: int, db: Session):
+    """Return a single thought by ID with full content and author info."""
+    thought = (
+        db.query(thought_model)
+        .options(joinedload(thought_model.author))
+        .filter(thought_model.id == thought_id)
+        .first()
+    )
+    if not thought:
+        raise HTTPException(status_code=404, detail="Thought not found")
+
+    return thought_feed_schema(
+        id=thought.id,
+        title=thought.title,
+        content=thought.content,
+        user_id=thought.user_id,
+        created_at=thought.created_at,
+        author_name=thought.author.name if thought.author else "",
+        author_username=thought.author.username if thought.author else "",
+    )
+
+
 def get_public_feed(db: Session):
     """Public feed — no auth required. Shows recent thoughts."""
     thoughts = (

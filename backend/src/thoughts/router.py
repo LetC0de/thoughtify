@@ -43,3 +43,9 @@ def update_thought(body: thought_schema, thought_id: int, db: Session = Depends(
 @thought_router.delete("/delete/{thought_id}", status_code=status.HTTP_200_OK)
 def delete_thought(thought_id: int, db: Session = Depends(get_db), user: UserModel = Depends(is_authenticated)):
     return controller.delete_thought(thought_id, db, user)
+
+
+@thought_router.get("/{thought_id}", response_model=thought_feed_schema, status_code=status.HTTP_200_OK)
+def get_thought_by_id(thought_id: int, db: Session = Depends(get_db)):
+    """Get a single thought by ID — no auth required. Must be last to avoid catching static routes."""
+    return controller.get_thought_by_id(thought_id, db)
