@@ -29,6 +29,6 @@ async def send_email(emails: List[str]):
     fm = FastMail(conf)
     try:
         await fm.send_message(message)
-        print(f"✅ Email sent to {emails}")
+        print(f" Email sent to {emails}")
     except Exception as e:
-        print(f"❌ Email failed to {emails}: {e}")
+        print(f" Email failed to {emails}: {e}")
