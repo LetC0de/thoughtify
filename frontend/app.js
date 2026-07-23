@@ -496,7 +496,7 @@ class Thoughtify {
 
   createPublicCard(thought, index) {
     const article = document.createElement('article');
-    article.className = 'thought-card';
+    article.className = 'thought-card thought-card--clickable';
     article.style.transitionDelay = `${index * 60}ms`;
 
     const dateStr = thought.created_at
@@ -522,6 +522,11 @@ class Thoughtify {
         <span class="thought-card-date">${dateStr}</span>
       </div>
     `;
+
+    // Click to navigate to detail page
+    article.addEventListener('click', () => {
+      window.location.href = `post.html?id=${thought.id}`;
+    });
 
     return article;
   }
@@ -589,7 +594,7 @@ class Thoughtify {
 
   createDashCard(thought, index) {
     const article = document.createElement('article');
-    article.className = 'thought-card';
+    article.className = 'thought-card thought-card--clickable';
     article.style.transitionDelay = `${index * 60}ms`;
 
     const dateStr = thought.created_at
@@ -622,6 +627,11 @@ class Thoughtify {
 
     const deleteBtn = article.querySelector('.delete-btn');
     if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.confirmDelete(thought); });
+
+    // Click to navigate to detail page (not triggered by action buttons)
+    article.addEventListener('click', () => {
+      window.location.href = `post.html?id=${thought.id}`;
+    });
 
     return article;
   }

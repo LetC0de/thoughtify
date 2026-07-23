@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thought — FreeSpeak</title>
+  <meta name="description" content="Read a thought on FreeSpeak." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="post.css" />
+</head>
+<body>
+
+  <!-- ═══ Ambient Glows ═══ -->
+  <div class="ambient-glow ambient-glow--top" aria-hidden="true"></div>
+  <div class="ambient-glow ambient-glow--bottom" aria-hidden="true"></div>
+
+  <!-- ═══ Loading Overlay ═══ -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="loading-logo">✦</div>
+      <div class="loading-spinner"></div>
+      <p class="loading-text">FreeSpeak</p>
+    </div>
+  </div>
+
+  <!-- ═══ POST DETAIL PAGE ═══ -->
+  <div class="post-page" id="postPage">
+
+    <!-- ── Nav Bar ── -->
+    <nav class="post-nav">
+      <div class="post-nav-inner">
+        <div class="post-nav-left">
+          <button class="btn btn-ghost btn-back" id="backBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></polyline></svg>
+            <span>Back</span>
+          </button>
+        </div>
+        <a href="/" class="logo" aria-label="FreeSpeak home">
+          <span class="logo-icon" aria-hidden="true">✦</span>
+          <span class="logo-text">Free<span>Speak</span></span>
+        </a>
+        <div class="post-nav-right"></div>
+      </div>
+    </nav>
+
+    <!-- ── Main Content ── -->
+    <main class="post-main">
+
+      <!-- Error state -->
+      <div class="post-error" id="postError" style="display: none;">
+        <div class="post-error-icon">⚠</div>
+        <h2 class="post-error-title">Thought Not Found</h2>
+        <p class="post-error-text">This thought may have been deleted or the link is invalid.</p>
+        <a href="/" class="btn btn-primary">Back to Feed</a>
+      </div>
+
+      <!-- Skeleton -->
+      <div class="post-skeleton" id="postSkeleton">
+        <div class="post-skeleton-back"></div>
+        <div class="post-skeleton-author">
+          <div class="post-skeleton-avatar"></div>
+          <div><div class="post-skeleton-line" style="width: 120px;"></div><div class="post-skeleton-line" style="width: 80px; margin-top: 6px;"></div></div>
+        </div>
+        <div class="post-skeleton-line" style="width: 75%; height: 32px; margin-top: 2rem;"></div>
+        <div class="post-skeleton-line" style="width: 100%; margin-top: 1.5rem;"></div>
+        <div class="post-skeleton-line" style="width: 100%;"></div>
+        <div class="post-skeleton-line" style="width: 65%;"></div>
+      </div>
+
+      <!-- Post content -->
+      <article class="post-article" id="postArticle" style="display: none;">
+
+        <!-- Author -->
+        <div class="post-author" id="postAuthor">
+          <div class="post-author-avatar" id="postAuthorAvatar">?</div>
+          <div class="post-author-info">
+            <span class="post-author-name" id="postAuthorName">Unknown</span>
+            <span class="post-author-username" id="postAuthorUsername">@unknown</span>
+          </div>
+          <span class="post-date" id="postDate"></span>
+        </div>
+
+        <!-- Divider -->
+        <div class="post-divider" aria-hidden="true">
+          <span class="post-divider-line"></span>
+          <span class="post-divider-ornament">◈</span>
+          <span class="post-divider-line"></span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="post-title" id="postTitle"></h1>
+
+        <!-- Content -->
+        <div class="post-content" id="postContent"></div>
+
+        <!-- Divider -->
+        <div class="post-divider" aria-hidden="true">
+          <span class="post-divider-line"></span>
+          <span class="post-divider-ornament">◈</span>
+          <span class="post-divider-line"></span>
+        </div>
+
+        <!-- Action bar (future-ready) -->
+        <div class="post-actions" id="postActions">
+          <button class="post-action-btn" id="postLikeBtn" title="Like" aria-label="Like">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="post-action-label">Like</span>
+            <span class="post-action-count" id="postLikeCount">0</span>
+          </button>
+          <button class="post-action-btn" id="postCommentBtn" title="Comment" aria-label="Comment">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="post-action-label">Comment</span>
+            <span class="post-action-count" id="postCommentCount">0</span>
+          </button>
+          <button class="post-action-btn" id="postShareBtn" title="Share" aria-label="Share">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span class="post-action-label">Share</span>
+          </button>
+          <div class="post-actions-spacer"></div>
+          <button class="post-action-btn post-action-btn--owner" id="postEditBtn" title="Edit" aria-label="Edit" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="post-action-btn post-action-btn--owner post-action-btn--danger" id="postDeleteBtn" title="Delete" aria-label="Delete" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+
+        <!-- Comments section (future-ready) -->
+        <section class="post-comments" id="postComments" style="display: none;">
+          <h3 class="post-comments-title">Comments</h3>
+          <div class="post-comments-list" id="postCommentsList"></div>
+          <div class="post-comment-form" id="postCommentForm">
+            <textarea class="post-comment-input" placeholder="Write a comment..." rows="2" id="postCommentInput"></textarea>
+            <button class="btn btn-primary btn-sm" id="postCommentSubmit">Post</button>
+          </div>
+        </section>
+
+      </article>
+    </main>
+
+  </div>
+
+  <!-- ═══ Toast Container ═══ -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="post.js"></script>
+</body>
+</html>

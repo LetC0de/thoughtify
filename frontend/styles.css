@@ -1360,6 +1360,10 @@ body::after {
   transform: translateY(20px);
 }
 
+.thought-card--clickable {
+  cursor: pointer;
+}
+
 .thought-card.visible {
   opacity: 1;
   transform: translateY(0);
