@@ -505,6 +505,9 @@ class Thoughtify {
         })
       : 'just now';
 
+    const liked = thought.liked_by_me || false;
+    const likesCount = thought.likes_count || 0;
+
     article.innerHTML = `
       <div class="thought-card-author">
         <div class="author-avatar">${(thought.author_name || '?').charAt(0).toUpperCase()}</div>
@@ -520,8 +523,9 @@ class Thoughtify {
       <div class="thought-card-content">${this.escapeHtml(thought.content)}</div>
       <div class="thought-card-footer">
         <div class="card-footer-actions">
-          <button class="card-action-btn" aria-label="Like">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <button class="card-action-btn card-like-btn ${liked ? 'liked' : ''}" data-liked="${liked}" data-thought-id="${thought.id}" aria-label="Like">
+            <svg class="like-icon" width="16" height="16" viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="like-count">${likesCount}</span>
           </button>
           <button class="card-action-btn" aria-label="Comment">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -530,6 +534,15 @@ class Thoughtify {
         <span class="thought-card-date">${dateStr}</span>
       </div>
     `;
+
+    // Like toggle
+    const likeBtn = article.querySelector('.card-like-btn');
+    if (likeBtn) {
+      likeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleLike(thought.id, likeBtn);
+      });
+    }
 
     // Click to navigate to detail page
     article.addEventListener('click', () => {
@@ -611,6 +624,9 @@ class Thoughtify {
         })
       : 'just now';
 
+    const liked = thought.liked_by_me || false;
+    const likesCount = thought.likes_count || 0;
+
     article.innerHTML = `
       <div class="thought-card-header">
         <span class="thought-card-bullet"></span>
@@ -619,8 +635,9 @@ class Thoughtify {
       <div class="thought-card-content">${this.escapeHtml(thought.content)}</div>
       <div class="thought-card-footer">
         <div class="card-footer-actions">
-          <button class="card-action-btn" aria-label="Like">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <button class="card-action-btn card-like-btn ${liked ? 'liked' : ''}" data-liked="${liked}" data-thought-id="${thought.id}" aria-label="Like">
+            <svg class="like-icon" width="16" height="16" viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="like-count">${likesCount}</span>
           </button>
           <button class="card-action-btn" aria-label="Comment">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -643,6 +660,15 @@ class Thoughtify {
 
     const deleteBtn = article.querySelector('.delete-btn');
     if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); this.confirmDelete(thought); });
+
+    // Like toggle
+    const likeBtn = article.querySelector('.card-like-btn');
+    if (likeBtn) {
+      likeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleLike(thought.id, likeBtn);
+      });
+    }
 
     // Click to navigate to detail page (not triggered by action buttons)
     article.addEventListener('click', () => {
@@ -728,6 +754,55 @@ class Thoughtify {
       ? (this.editingId ? 'Updating...' : 'Sharing...')
       : (this.editingId ? 'Update Thought' : 'Share Thought');
     this.submitSpinner.style.display = submitting ? 'inline-block' : 'none';
+  }
+
+  /* ─── Like Toggle ─── */
+
+  async toggleLike(thoughtId, btnEl) {
+    const token = this.getToken();
+    if (!token) {
+      this.openAuth('login');
+      return;
+    }
+
+    // Optimistic UI
+    const isLiked = btnEl.dataset.liked === 'true';
+    const newLiked = !isLiked;
+    const countEl = btnEl.querySelector('.like-count');
+    const iconEl = btnEl.querySelector('.like-icon');
+    const currentCount = parseInt(countEl.textContent || '0', 10);
+
+    // Update immediately
+    btnEl.dataset.liked = newLiked;
+    btnEl.classList.toggle('liked', newLiked);
+    iconEl.setAttribute('fill', newLiked ? 'currentColor' : 'none');
+    countEl.textContent = newLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+
+    try {
+      const res = await fetch(`${this.apiBaseThought}/${thoughtId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      // Sync with server response
+      countEl.textContent = data.likes;
+      if (data.liked !== newLiked) {
+        btnEl.dataset.liked = data.liked;
+        btnEl.classList.toggle('liked', data.liked);
+        iconEl.setAttribute('fill', data.liked ? 'currentColor' : 'none');
+      }
+    } catch {
+      // Rollback on failure
+      btnEl.dataset.liked = isLiked;
+      btnEl.classList.toggle('liked', isLiked);
+      iconEl.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+      countEl.textContent = currentCount;
+      this.showToast('Failed to update like.', 'error');
+    }
   }
 
   enterEditMode(thought) {

@@ -142,6 +142,13 @@ class PostPage {
     this.postTitle.textContent = t.title;
     this.postContent.textContent = t.content;
 
+    // Like info
+    const liked = t.liked_by_me || false;
+    const likesCount = t.likes_count || 0;
+    this.postLikeCount.textContent = likesCount;
+    this.postLikeBtn.dataset.liked = liked;
+    this.postLikeBtn.classList.toggle('liked', liked);
+
     // Owner actions
     const isOwn = this.currentUser && t.user_id === this.currentUser.id;
     this.postOwnerActions.style.display = isOwn ? 'flex' : 'none';
@@ -175,8 +182,42 @@ class PostPage {
     }
   }
 
-  handleLike() {
-    this.showToast('Likes coming soon!', 'success');
+  async handleLike() {
+    const token = this.getToken();
+    if (!token) return this.showToast('Sign in to like!', 'error');
+
+    const btn = this.postLikeBtn;
+    const isLiked = btn.dataset.liked === 'true';
+    const newLiked = !isLiked;
+    const currentCount = parseInt(this.postLikeCount.textContent || '0', 10);
+
+    // Optimistic update
+    btn.dataset.liked = newLiked;
+    btn.classList.toggle('liked', newLiked);
+    this.postLikeCount.textContent = newLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+
+    try {
+      const res = await fetch(`${this.apiThought}/${this.thought.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      this.postLikeCount.textContent = data.likes;
+      if (data.liked !== newLiked) {
+        btn.dataset.liked = data.liked;
+        btn.classList.toggle('liked', data.liked);
+      }
+    } catch {
+      // Rollback
+      btn.dataset.liked = isLiked;
+      btn.classList.toggle('liked', isLiked);
+      this.postLikeCount.textContent = currentCount;
+      this.showToast('Failed to update like.', 'error');
+    }
   }
 
   handleShare() {

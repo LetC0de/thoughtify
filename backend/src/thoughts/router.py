@@ -1,6 +1,6 @@
 from src.thoughts.schema import thought_schema, thought_response_schema, thought_feed_schema
 from fastapi import APIRouter, Depends, status
-from src.utils.helper import is_authenticated
+from src.utils.helper import is_authenticated, get_optional_user
 from src.user.model import UserModel
 from src.thoughts import controller
 from sqlalchemy.orm import Session
@@ -46,6 +46,6 @@ def delete_thought(thought_id: int, db: Session = Depends(get_db), user: UserMod
 
 
 @thought_router.get("/{thought_id}", response_model=thought_feed_schema, status_code=status.HTTP_200_OK)
-def get_thought_by_id(thought_id: int, db: Session = Depends(get_db)):
+def get_thought_by_id(thought_id: int, db: Session = Depends(get_db), user: UserModel | None = Depends(get_optional_user)):
     """Get a single thought by ID — no auth required. Must be last to avoid catching static routes."""
-    return controller.get_thought_by_id(thought_id, db)
+    return controller.get_thought_by_id(thought_id, db, user)

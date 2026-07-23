@@ -15,7 +15,7 @@ def is_authenticated(request:Request, db:Session = Depends(get_db)):
 
         if not token:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found")
-        
+
         token =token.split(" ")[-1]
 
         data = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
@@ -29,3 +29,17 @@ def is_authenticated(request:Request, db:Session = Depends(get_db)):
         return user
     except InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token")
+
+
+def get_optional_user(request: Request, db: Session = Depends(get_db)) -> UserModel | None:
+    """Like is_authenticated but returns None instead of raising on failure."""
+    try:
+        token = request.headers.get("authorization")
+        if not token:
+            return None
+        token = token.split(" ")[-1]
+        data = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
+        user_id = data.get("_id")
+        return db.query(UserModel).filter(UserModel.id == user_id).first()
+    except (InvalidTokenError, Exception):
+        return None

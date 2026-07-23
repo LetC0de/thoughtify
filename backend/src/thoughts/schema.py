@@ -21,3 +21,5 @@ class thought_feed_schema(thought_response_schema):
     """Feed response includes author info."""
     author_name: str = ""
     author_username: str = ""
+    likes_count: int = 0
+    liked_by_me: bool = False
