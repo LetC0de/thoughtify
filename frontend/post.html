@@ -134,6 +134,36 @@
 
       </article>
 
+      <!-- ═══ Comments Section ═══ -->
+      <section class="post-comments" id="postCommentsSection">
+        <div class="post-comments-header">
+          <h3 class="post-comments-title">Comments</h3>
+          <span class="post-comments-count" id="postCommentsCount">0</span>
+        </div>
+
+        <!-- Comment form -->
+        <div class="post-comment-form" id="postCommentForm">
+          <div class="post-comment-avatar" id="commentFormAvatar">?</div>
+          <div class="post-comment-input-wrap">
+            <textarea class="post-comment-input" id="postCommentInput" placeholder="Write a comment..." rows="2"></textarea>
+            <div class="post-comment-actions">
+              <span class="post-comment-replying" id="postReplyingTo" style="display: none;">
+                Replying to <strong id="postReplyTargetName"></strong>
+                <button class="post-comment-cancel" id="postCancelReply">Cancel</button>
+              </span>
+              <button class="btn btn-primary btn-sm" id="postCommentSubmit">Post</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comments list -->
+        <div class="post-comments-list" id="postCommentsList">
+          <div class="post-comments-empty" id="postCommentsEmpty">
+            <p>No comments yet. Be the first to share your thoughts!</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Related / More section -->
       <div class="post-more" id="postMore" style="display: none;">
         <div class="post-more-divider">

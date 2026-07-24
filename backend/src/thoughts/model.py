@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from datetime import datetime, timezone
 from src.utils.db import base
 
@@ -35,3 +35,29 @@ class LikeModel(base):
     )
 
     liker = relationship("UserModel")
+
+
+class CommentModel(base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True)
+    thought_id = Column(Integer, ForeignKey("thoughts.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    parent_comment_id = Column(Integer, ForeignKey("comments.id", ondelete="CASCADE"), nullable=True)
+    content = Column(String, nullable=False)
+    likes_count = Column(Integer, default=0)
+    reply_count = Column(Integer, default=0)
+    is_edited = Column(Integer, default=False)
+    is_deleted = Column(Integer, default=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    author = relationship("UserModel")
+    thought = relationship("thought_model", backref="comments")
+
+    # Self-referencing for nested replies
+    replies = relationship(
+        "CommentModel",
+        backref=backref("parent", remote_side=[id]),
+        cascade="all, delete-orphan",
+    )

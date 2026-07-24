@@ -4,7 +4,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from src.utils.settings import settings
 from src.user.model import UserModel
-from src.thoughts.model import thought_model
+from src.thoughts.model import thought_model, CommentModel
 from src.utils.db import base
 
 from alembic import context
