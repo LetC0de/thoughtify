@@ -5,6 +5,7 @@ class settings(BaseSettings):
 
     DB_CONNECTION : str
     SECRET_KEY : str
+    RESEND_API_KEY : str
     ALGORITHM : str
     EXP_TIME : int
 

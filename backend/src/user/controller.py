@@ -1,6 +1,6 @@
 from src.user.schema import UserSchema, UserLoginSchema
 from fastapi import HTTPException, status, Request, BackgroundTasks
-from src.utils.mail import send_email
+from src.utils.mail import _send_email, welcome_email_html
 from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 from src.utils.settings import settings
@@ -57,7 +57,7 @@ async def register_user(body: UserSchema, db: Session, bg_task: BackgroundTasks)
     db.commit()
     db.refresh(new_user)
 
-    bg_task.add_task(send_email, new_user.email)
+    _send_email(new_user.email, "Welcome to FreeSpeak", welcome_email_html())
 
     return new_user
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, BackgroundTasks, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from src.utils.db import get_db
 from src.user.otp_schema import SendOTPRequest, VerifyOTPRequest, OTPResponse
@@ -8,8 +8,8 @@ otp_router = APIRouter(prefix="/auth")
 
 
 @otp_router.post("/send-otp", response_model=OTPResponse, status_code=status.HTTP_200_OK)
-def send_otp(body: SendOTPRequest, bg_task: BackgroundTasks, db: Session = Depends(get_db)):
-    return otp_controller.send_otp(body.email.strip().lower(), bg_task, db)
+def send_otp(body: SendOTPRequest, db: Session = Depends(get_db)):
+    return otp_controller.send_otp(body.email.strip().lower(), db)
 
 
 @otp_router.post("/verify-otp", response_model=OTPResponse, status_code=status.HTTP_200_OK)

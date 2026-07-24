@@ -7,3 +7,4 @@ pyjwt
 alembic
 fastapi-mail
 psycopg2-binary
+resend
