@@ -47,8 +47,8 @@ class CommentModel(base):
     content = Column(String, nullable=False)
     likes_count = Column(Integer, default=0)
     reply_count = Column(Integer, default=0)
-    is_edited = Column(Integer, default=False)
-    is_deleted = Column(Integer, default=False)
+    is_edited = Column(Integer, default=0)
+    is_deleted = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

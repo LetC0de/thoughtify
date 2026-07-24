@@ -110,8 +110,6 @@ def delete_comment(comment_id: int, db: Session, user: UserModel):
     if comment.user_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
 
-    # Soft delete — keep the tree intact
-    comment.is_deleted = True
-    comment.content = ""
+    db.delete(comment)
     db.commit()
     return {"message": "Comment deleted"}

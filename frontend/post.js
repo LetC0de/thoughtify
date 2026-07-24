@@ -249,7 +249,7 @@ class PostPage {
           <span class="comment-author-username">@${this.escapeHtml(comment.author_username || 'unknown')}</span>
           ${timeStr ? `<span class="comment-time">${timeStr}</span>` : ''}
         </div>
-        <div class="comment-content ${comment.is_deleted ? 'deleted' : ''}">${this.escapeHtml(comment.content || comment.is_deleted ? '[This comment has been deleted]' : '')}</div>
+        <div class="comment-content ${comment.is_deleted ? 'deleted' : ''}">${comment.is_deleted ? '[This comment has been deleted]' : this.escapeHtml(comment.content)}</div>
         <div class="comment-footer">
           ${!comment.is_deleted ? `<button class="comment-reply-btn">Reply</button>` : ''}
           ${isOwn && !comment.is_deleted ? `<button class="comment-delete-btn" title="Delete">Delete</button>` : ''}
