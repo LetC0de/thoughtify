@@ -79,7 +79,7 @@ def is_authenticated(request:Request, db:Session):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found")
         
         token =token.split(" ")[-1]
-
+        
         data = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
         user_id = data.get("_id")
 
