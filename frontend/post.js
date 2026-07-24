@@ -125,7 +125,10 @@ class PostPage {
     this.currentUser = this.getUser();
 
     try {
-      const res = await fetch(`${this.apiThought}/${thoughtId}`);
+      const token = this.getToken();
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`${this.apiThought}/${thoughtId}`, { headers });
       if (!res.ok) throw new Error('Not found');
       this.thought = await res.json();
       this.render();

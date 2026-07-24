@@ -1518,6 +1518,11 @@ body::after {
   color: #e85d75;
 }
 
+.card-like-btn.liked .like-icon {
+  fill: #e85d75 !important;
+  stroke: #e85d75 !important;
+}
+
 .card-like-btn.liked:hover {
   background: rgba(232, 93, 117, 0.12);
 }

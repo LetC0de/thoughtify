@@ -394,6 +394,15 @@
   transform: scale(1.15);
 }
 
+.post-action-btn--like.liked {
+  color: #e85d75;
+}
+
+.post-action-btn--like.liked svg {
+  fill: #e85d75 !important;
+  stroke: #e85d75 !important;
+}
+
 .post-action-btn--like:hover {
   color: #e85d75;
   background: rgba(232, 93, 117, 0.1);

@@ -13,9 +13,9 @@ thought_router = APIRouter(prefix="/thought")
 
 
 @thought_router.get("/public", response_model=List[thought_feed_schema], status_code=status.HTTP_200_OK)
-def get_public_feed(db: Session = Depends(get_db)):
-    """Public feed — no auth required."""
-    return controller.get_public_feed(db)
+def get_public_feed(db: Session = Depends(get_db), user: UserModel | None = Depends(get_optional_user)):
+    """Public feed — no auth required. Shows recent thoughts."""
+    return controller.get_public_feed(db, user)
 
 
 @thought_router.post("/create", response_model=thought_response_schema, status_code=status.HTTP_201_CREATED)

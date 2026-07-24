@@ -101,7 +101,7 @@ def get_thought_by_id(thought_id: int, db: Session, user: UserModel | None = Non
     )
 
 
-def get_public_feed(db: Session):
+def get_public_feed(db: Session, user: UserModel | None = None):
     """Public feed — no auth required. Shows recent thoughts."""
     thoughts = (
         db.query(thought_model)
@@ -113,6 +113,7 @@ def get_public_feed(db: Session):
     )
     thought_ids = [t.id for t in thoughts]
     comment_counts = _get_comment_counts(thought_ids, db)
+    liked_ids = _get_liked_thought_ids(user.id, thought_ids, db) if user else set()
     return [
         thought_feed_schema(
             id=t.id,
@@ -121,6 +122,7 @@ def get_public_feed(db: Session):
             user_id=t.user_id,
             created_at=t.created_at,
             likes_count=t.likes_count or 0,
+            liked_by_me=t.id in liked_ids,
             comment_count=comment_counts.get(t.id, 0),
             author_name=t.author.name if t.author else "",
             author_username=t.author.username if t.author else "",
