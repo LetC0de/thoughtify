@@ -23,3 +23,4 @@ class thought_feed_schema(thought_response_schema):
     author_username: str = ""
     likes_count: int = 0
     liked_by_me: bool = False
+    comment_count: int = 0

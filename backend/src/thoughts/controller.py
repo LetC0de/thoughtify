@@ -1,15 +1,17 @@
 from src.thoughts.schema import thought_schema, thought_feed_schema
-from src.thoughts.model import thought_model, LikeModel
+from src.thoughts.model import thought_model, LikeModel, CommentModel
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
 from fastapi import HTTPException
 from src.user.model import UserModel
 
 
-def _build_feed_item(t, liked_ids=None):
+def _build_feed_item(t, liked_ids=None, comment_counts=None):
     """Build a thought_feed_schema from a thought_model row."""
     liked_by_me = False
     if liked_ids is not None:
         liked_by_me = t.id in liked_ids
+    cc = (comment_counts or {}).get(t.id, 0)
     return thought_feed_schema(
         id=t.id,
         title=t.title,
@@ -18,6 +20,7 @@ def _build_feed_item(t, liked_ids=None):
         created_at=t.created_at,
         likes_count=t.likes_count or 0,
         liked_by_me=liked_by_me,
+        comment_count=cc,
         author_name=t.author.name if t.author else "",
         author_username=t.author.username if t.author else "",
     )
@@ -36,6 +39,19 @@ def _get_liked_thought_ids(user_id: int, thought_ids: list[int], db: Session) ->
         .all()
     )
     return {r[0] for r in rows}
+
+
+def _get_comment_counts(thought_ids: list[int], db: Session) -> dict:
+    """Return dict of thought_id -> comment_count."""
+    if not thought_ids:
+        return {}
+    rows = (
+        db.query(CommentModel.thought_id, func.count(CommentModel.id))
+        .filter(CommentModel.thought_id.in_(thought_ids))
+        .group_by(CommentModel.thought_id)
+        .all()
+    )
+    return {r[0]: r[1] for r in rows}
 
 
 def create_thought(body: thought_schema, db: Session, user: UserModel):
@@ -95,6 +111,8 @@ def get_public_feed(db: Session):
         .limit(50)
         .all()
     )
+    thought_ids = [t.id for t in thoughts]
+    comment_counts = _get_comment_counts(thought_ids, db)
     return [
         thought_feed_schema(
             id=t.id,
@@ -103,6 +121,7 @@ def get_public_feed(db: Session):
             user_id=t.user_id,
             created_at=t.created_at,
             likes_count=t.likes_count or 0,
+            comment_count=comment_counts.get(t.id, 0),
             author_name=t.author.name if t.author else "",
             author_username=t.author.username if t.author else "",
         )
@@ -120,7 +139,8 @@ def get_global_feed(db: Session, user: UserModel):
     )
     thought_ids = [t.id for t in thoughts]
     liked_ids = _get_liked_thought_ids(user.id, thought_ids, db)
-    return [_build_feed_item(t, liked_ids) for t in thoughts]
+    comment_counts = _get_comment_counts(thought_ids, db)
+    return [_build_feed_item(t, liked_ids, comment_counts) for t in thoughts]
 
 
 def get_my_thoughts(db: Session, user: UserModel):
@@ -134,7 +154,8 @@ def get_my_thoughts(db: Session, user: UserModel):
     )
     thought_ids = [t.id for t in thoughts]
     liked_ids = _get_liked_thought_ids(user.id, thought_ids, db)
-    return [_build_feed_item(t, liked_ids) for t in thoughts]
+    comment_counts = _get_comment_counts(thought_ids, db)
+    return [_build_feed_item(t, liked_ids, comment_counts) for t in thoughts]
 
 
 def update_thought(body: thought_schema, thought_id: int, db: Session, user: UserModel):

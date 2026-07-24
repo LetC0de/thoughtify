@@ -536,6 +536,7 @@ class Thoughtify {
 
     const liked = thought.liked_by_me || false;
     const likesCount = thought.likes_count || 0;
+    const commentCount = thought.comment_count || 0;
 
     article.innerHTML = `
       <div class="thought-card-author">
@@ -558,6 +559,7 @@ class Thoughtify {
           </button>
           <button class="card-action-btn" aria-label="Comment">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="like-count">${commentCount}</span>
           </button>
         </div>
         <span class="thought-card-date">${dateStr}</span>
@@ -655,6 +657,7 @@ class Thoughtify {
 
     const liked = thought.liked_by_me || false;
     const likesCount = thought.likes_count || 0;
+    const commentCount = thought.comment_count || 0;
 
     article.innerHTML = `
       <div class="thought-card-header">
@@ -670,6 +673,7 @@ class Thoughtify {
           </button>
           <button class="card-action-btn" aria-label="Comment">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="like-count">${commentCount}</span>
           </button>
         </div>
         <div class="thought-card-actions" style="opacity: 1;">
