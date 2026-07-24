@@ -2006,6 +2006,57 @@ body::after {
   .toast { padding: 0.7rem 1rem; font-size: 0.8rem; }
 }
 
+/* ═══════════════════════════════════════════════════════
+   OTP SECTION
+   ═══════════════════════════════════════════════════════ */
+.otp-section {
+  margin-top: 0.5rem;
+}
+
+.otp-section .divider {
+  margin: 0.75rem 0 1rem;
+}
+
+.otp-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.otp-input-row .form-input {
+  flex: 1;
+  letter-spacing: 0.2em;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.btn-otp {
+  flex-shrink: 0;
+  padding: 0.85rem 1rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.otp-status {
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 0.4rem;
+  min-height: 1.2em;
+}
+
+.otp-status.success {
+  color: var(--success);
+}
+
+.otp-status.error {
+  color: var(--danger);
+}
+
+.otp-status.info {
+  color: var(--accent-light);
+}
+
 /* ─── Focus visible ─── */
 :focus-visible {
   outline: 2px solid var(--accent);

@@ -97,6 +97,10 @@ class Thoughtify {
     this.regUsername = document.getElementById('regUsername');
     this.regEmail = document.getElementById('regEmail');
     this.regPassword = document.getElementById('regPassword');
+    this.otpSection = document.getElementById('otpSection');
+    this.regOtp = document.getElementById('regOtp');
+    this.otpSendBtn = document.getElementById('otpSendBtn');
+    this.otpStatus = document.getElementById('otpStatus');
 
     // Dashboard header
     this.headerGreeting = document.getElementById('headerGreeting');
@@ -182,6 +186,19 @@ class Thoughtify {
     // Auth forms
     this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
     this.registerForm.addEventListener('submit', (e) => this.handleRegister(e));
+
+    // OTP
+    this.regEmail.addEventListener('blur', () => {
+      const email = this.regEmail.value.trim();
+      if (email && email.includes('@')) {
+        this.otpSection.style.display = 'block';
+      }
+    });
+    this.regEmail.addEventListener('input', () => {
+      this.resetOtpState();
+    });
+    this.otpSendBtn.addEventListener('click', () => this.handleSendOtp());
+    this.regOtp.addEventListener('input', () => this.checkOtpAndEnableRegister());
 
     // Dashboard nav
     this.logoutBtn.addEventListener('click', () => this.logout());
@@ -363,6 +380,81 @@ class Thoughtify {
     }
   }
 
+  /* ─── OTP ─── */
+
+  handleSendOtp() {
+    const email = this.regEmail.value.trim();
+    if (!email || !email.includes('@')) {
+      this.otpStatus.textContent = 'Please enter a valid email first.';
+      this.otpStatus.className = 'otp-status error';
+      return;
+    }
+
+    this.otpSendBtn.disabled = true;
+    this.otpSendBtn.textContent = 'Sending...';
+    this.otpStatus.textContent = 'Sending OTP...';
+    this.otpStatus.className = 'otp-status info';
+
+    fetch(`${this.apiBaseUser.replace('/user', '')}/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+      .then(res => res.json().then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) throw new Error(data.detail || 'Failed to send OTP');
+        this.otpStatus.textContent = 'OTP sent! Check your email.';
+        this.otpStatus.className = 'otp-status success';
+        this.otpSendBtn.textContent = 'Resend OTP';
+        this.otpSendBtn.disabled = false;
+        this.regOtp.focus();
+      })
+      .catch(err => {
+        this.otpStatus.textContent = err.message;
+        this.otpStatus.className = 'otp-status error';
+        this.otpSendBtn.textContent = 'Try Again';
+        this.otpSendBtn.disabled = false;
+      });
+  }
+
+  checkOtpAndEnableRegister() {
+    const otp = this.regOtp.value.trim();
+    if (otp.length === 6) {
+      // Auto-verify when 6 digits entered
+      this.verifyOtpAndEnable(otp);
+    } else {
+      this.registerBtn.disabled = true;
+      this.otpStatus.textContent = '';
+      this.otpStatus.className = 'otp-status';
+    }
+  }
+
+  async verifyOtpAndEnable(otp) {
+    const email = this.regEmail.value.trim();
+    this.otpStatus.textContent = 'Verifying...';
+    this.otpStatus.className = 'otp-status info';
+
+    try {
+      const res = await fetch(`${this.apiBaseUser.replace('/user', '')}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Invalid OTP');
+
+      this.otpStatus.textContent = '✅ Email verified! You can now create your account.';
+      this.otpStatus.className = 'otp-status success';
+      this.registerBtn.disabled = false;
+      this.regOtp.readOnly = true;
+      this.otpSendBtn.disabled = true;
+    } catch (err) {
+      this.otpStatus.textContent = err.message;
+      this.otpStatus.className = 'otp-status error';
+      this.registerBtn.disabled = true;
+    }
+  }
+
   async handleRegister(e) {
     e.preventDefault();
     const name = this.regName.value.trim();
@@ -392,7 +484,7 @@ class Thoughtify {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Registration failed');
 
-      this.showToast('Account created! Welcome to Thoughtify 🎉', 'success');
+      this.showToast('Account created! Welcome to FreeSpeak 🎉', 'success');
 
       this.switchAuthTab('login');
       this.loginUsername.value = username;
@@ -444,6 +536,7 @@ class Thoughtify {
     [this.loginForm, this.registerForm].forEach(f => f.classList.remove('active'));
     this.loginError.textContent = '';
     this.registerError.textContent = '';
+    this.resetOtpState();
 
     if (tab === 'login') {
       this.tabLogin.classList.add('active');
@@ -456,6 +549,16 @@ class Thoughtify {
       this.tabRegister.setAttribute('aria-selected', 'true');
       this.tabLogin.setAttribute('aria-selected', 'false');
     }
+  }
+
+  resetOtpState() {
+    this.otpSection.style.display = 'none';
+    this.regOtp.value = '';
+    this.otpStatus.textContent = '';
+    this.otpStatus.className = 'otp-status';
+    this.otpSendBtn.disabled = false;
+    this.otpSendBtn.textContent = 'Send OTP';
+    this.registerBtn.disabled = true;
   }
 
   setAuthLoading(form, loading) {

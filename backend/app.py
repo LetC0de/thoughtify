@@ -5,6 +5,7 @@ from src.thoughts.router import thought_router
 from src.user.router import user_router
 from src.likes.router import like_router
 from src.comments.router import comment_router
+from src.user.otp_router import otp_router
 
 base.metadata.create_all(bind=engine)
 
@@ -30,3 +31,4 @@ app.include_router(thought_router)
 app.include_router(user_router)
 app.include_router(like_router)
 app.include_router(comment_router)
+app.include_router(otp_router)

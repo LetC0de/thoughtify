@@ -4,7 +4,7 @@ from src.utils.mail import send_email
 from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 from src.utils.settings import settings
-from src.user.model import UserModel
+from src.user.model import UserModel, EmailVerification
 from sqlalchemy.orm import Session
 from pwdlib import PasswordHash
 import jwt
@@ -16,19 +16,33 @@ def get_password_hash(password):
     return password_hash.hash(password)
 
 
-async def register_user(body: UserSchema, db: Session, bg_task:BackgroundTasks):
+async def register_user(body: UserSchema, db: Session, bg_task: BackgroundTasks):
+
+    # Check OTP verification
+    verification = (
+        db.query(EmailVerification)
+        .filter(
+            EmailVerification.email == body.email,
+            EmailVerification.verified == True,
+        )
+        .order_by(EmailVerification.created_at.desc())
+        .first()
+    )
+    if not verification:
+        raise HTTPException(
+            status_code=400,
+            detail="Email not verified. Please verify your email with OTP first.",
+        )
 
     is_username_exists = db.query(UserModel).filter(UserModel.username == body.username).first()
 
     if is_username_exists:
         raise HTTPException(status_code=400, detail="Username already exists")
 
-
     is_email_exists = db.query(UserModel).filter(UserModel.email == body.email).first()
 
     if is_email_exists:
         raise HTTPException(status_code=400, detail="Email already exists")
-    
 
     hashed_password = get_password_hash(body.password)
 
@@ -36,7 +50,7 @@ async def register_user(body: UserSchema, db: Session, bg_task:BackgroundTasks):
         name=body.name,
         username=body.username,
         password=hashed_password,
-        email=body.email
+        email=body.email,
     )
 
     db.add(new_user)
