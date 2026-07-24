@@ -10,4 +10,5 @@ class settings(BaseSettings):
     EXP_TIME : int
 
 
+
 settings = settings()
