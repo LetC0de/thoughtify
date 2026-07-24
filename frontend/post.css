@@ -669,6 +669,18 @@
   margin-left: 2.5rem;
   border-left: 2px solid var(--border-subtle);
   padding-left: 0.5rem;
+  overflow: hidden;
+  transition: max-height 0.3s var(--ease-out), opacity 0.25s var(--ease-out);
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.comment-replies.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
 }
 
 .comment-replies .comment {
@@ -678,6 +690,33 @@
 
 .comment-replies .comment-replies {
   margin-left: 1.8rem;
+}
+
+/* ─── Toggle Replies Button ─── */
+.comment-toggle-replies {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0.3rem 2.5rem;
+  padding: 0.15rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--accent-light);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+}
+
+.comment-toggle-replies:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.comment-toggle-replies svg {
+  transition: transform 0.2s var(--ease-out);
 }
 
 /* ─── Inline reply form ─── */

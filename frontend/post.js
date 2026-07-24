@@ -202,9 +202,10 @@ class PostPage {
 
   renderComments() {
     const list = this.postCommentsList;
-    // Clear all but the empty state placeholder
     list.innerHTML = '';
-    this.postCommentsCount.textContent = this.countAllComments(this.comments);
+    const total = this.countAllComments(this.comments);
+    this.postCommentsCount.textContent = total;
+    this.postCommentCount.textContent = total;
 
     if (this.comments.length === 0) {
       list.appendChild(this.postCommentsEmpty);
@@ -291,6 +292,30 @@ class PostPage {
     if (comment.replies && comment.replies.length > 0) {
       const repliesContainer = document.createElement('div');
       repliesContainer.className = 'comment-replies';
+      // Start collapsed if depth >= 1 (nested replies), expanded for root comments
+      const startCollapsed = depth >= 1;
+      if (startCollapsed) repliesContainer.classList.add('collapsed');
+
+      const replyCount = this.countAllComments(comment.replies);
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'comment-toggle-replies';
+      toggleBtn.dataset.open = startCollapsed ? 'false' : 'true';
+      toggleBtn.innerHTML = startCollapsed
+        ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg> Show ${replyCount} repl${replyCount > 1 ? 'ies' : 'y'}`
+        : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg> Hide replies`;
+
+      toggleBtn.addEventListener('click', () => {
+        const isOpen = toggleBtn.dataset.open === 'true';
+        repliesContainer.classList.toggle('collapsed', isOpen);
+        toggleBtn.dataset.open = isOpen ? 'false' : 'true';
+        toggleBtn.innerHTML = isOpen
+          ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg> Show ${replyCount} repl${replyCount > 1 ? 'ies' : 'y'}`
+          : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg> Hide replies`;
+      });
+
+      // Insert toggle before replies container
+      container.appendChild(toggleBtn);
+
       comment.replies.forEach(reply => {
         const replyEl = this.createCommentElement(reply, depth + 1);
         repliesContainer.appendChild(replyEl);
