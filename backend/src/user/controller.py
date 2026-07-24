@@ -105,3 +105,4 @@ def is_authenticated(request:Request, db:Session):
         return user
     except InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token")
+    
