@@ -664,47 +664,53 @@
   color: var(--accent);
 }
 
-/* ─── Nested replies ─── */
-.comment-replies {
-  margin-left: 2.5rem;
+/* ─── Reply badge ─── */
+.comment-reply-badge {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 0.1rem;
+  line-height: 1;
+}
+
+.comment-reply-badge span {
+  color: var(--accent-light);
+  font-weight: 500;
+}
+
+.comment--reply {
   border-left: 2px solid var(--border-subtle);
-  padding-left: 0.5rem;
+  padding-left: 1rem;
+  margin-left: 2.5rem;
+}
+
+/* ─── Nested replies container ─── */
+.comment-replies {
   overflow: hidden;
-  transition: max-height 0.3s var(--ease-out), opacity 0.25s var(--ease-out);
-  max-height: 2000px;
+  transition: max-height 0.35s var(--ease-out), opacity 0.25s var(--ease-out);
+  max-height: 3000px;
   opacity: 1;
 }
 
 .comment-replies.collapsed {
   max-height: 0;
   opacity: 0;
-  padding: 0;
   margin: 0;
-  border: none;
-}
-
-.comment-replies .comment {
-  border-bottom: none;
-  padding: 0.6rem 0;
-}
-
-.comment-replies .comment-replies {
-  margin-left: 1.8rem;
+  padding: 0;
 }
 
 /* ─── Toggle Replies Button ─── */
 .comment-toggle-replies {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  margin: 0.3rem 0 0.3rem 2.5rem;
-  padding: 0.15rem 0.5rem;
+  gap: 0.35rem;
+  margin: 0.35rem 0;
+  padding: 0.2rem 0.6rem;
   background: transparent;
   border: none;
   border-radius: 6px;
   color: var(--accent-light);
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s var(--ease-out);

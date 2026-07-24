@@ -230,11 +230,11 @@ class PostPage {
     return count;
   }
 
-  createCommentElement(comment, depth) {
+  createCommentElement(comment, depth, parentAuthorName) {
     const container = document.createElement('div');
 
     const el = document.createElement('div');
-    el.className = 'comment';
+    el.className = depth > 0 ? 'comment comment--reply' : 'comment';
 
     const isOwn = this.currentUser && comment.user_id === this.currentUser.id;
     const initial = (comment.author_name || '?').charAt(0).toUpperCase();
@@ -242,9 +242,15 @@ class PostPage {
       ? new Date(comment.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       : '';
 
+    // Show "Replying to @user" for nested comments instead of indentation
+    const replyingToHtml = parentAuthorName
+      ? `<div class="comment-reply-badge">↳ Replying to <span>@${this.escapeHtml(parentAuthorName)}</span></div>`
+      : '';
+
     el.innerHTML = `
       <div class="comment-avatar">${initial}</div>
       <div class="comment-body">
+        ${replyingToHtml}
         <div class="comment-author-row">
           <span class="comment-author-name">${this.escapeHtml(comment.author_name || comment.author_username || 'Unknown')}</span>
           <span class="comment-author-username">@${this.escapeHtml(comment.author_username || 'unknown')}</span>
@@ -252,7 +258,7 @@ class PostPage {
         </div>
         <div class="comment-content ${comment.is_deleted ? 'deleted' : ''}">${comment.is_deleted ? '[This comment has been deleted]' : this.escapeHtml(comment.content)}</div>
         <div class="comment-footer">
-          ${!comment.is_deleted ? `<button class="comment-reply-btn">Reply</button>` : ''}
+          <button class="comment-reply-btn">Reply</button>
           ${isOwn && !comment.is_deleted ? `<button class="comment-delete-btn" title="Delete">Delete</button>` : ''}
         </div>
       </div>
@@ -260,11 +266,7 @@ class PostPage {
 
     // Reply button
     const replyBtn = el.querySelector('.comment-reply-btn');
-    if (replyBtn) {
-      replyBtn.addEventListener('click', () => {
-        this.setReplyingTo(comment);
-      });
-    }
+    replyBtn.addEventListener('click', () => { this.setReplyingTo(comment); });
 
     // Delete button
     const deleteBtn = el.querySelector('.comment-delete-btn');
@@ -288,42 +290,52 @@ class PostPage {
 
     container.appendChild(el);
 
-    // Replies
-    if (comment.replies && comment.replies.length > 0) {
+    // Replies — only root comments get a toggle button
+    if (comment.replies && comment.replies.length > 0 && depth === 0) {
+      const allReplies = this.flattenReplies(comment.replies);
+      const replyCount = allReplies.length;
+      const replyAuthor = comment.author_username || '';
+
       const repliesContainer = document.createElement('div');
       repliesContainer.className = 'comment-replies';
-      // Start collapsed if depth >= 1 (nested replies), expanded for root comments
-      const startCollapsed = depth >= 1;
-      if (startCollapsed) repliesContainer.classList.add('collapsed');
+      repliesContainer.classList.add('collapsed');
 
-      const replyCount = this.countAllComments(comment.replies);
+      // Build all replies with the "Replying to" approach (depth passed as depth+1 but layout stays flat)
+      allReplies.forEach(reply => {
+        const replyEl = this.createCommentElement(reply, 1, replyAuthor);
+        repliesContainer.appendChild(replyEl);
+      });
+
       const toggleBtn = document.createElement('button');
       toggleBtn.className = 'comment-toggle-replies';
-      toggleBtn.dataset.open = startCollapsed ? 'false' : 'true';
-      toggleBtn.innerHTML = startCollapsed
-        ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg> Show ${replyCount} repl${replyCount > 1 ? 'ies' : 'y'}`
-        : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg> Hide replies`;
+      toggleBtn.dataset.open = 'false';
+      toggleBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg> View ${replyCount} repl${replyCount > 1 ? 'ies' : 'y'}`;
 
       toggleBtn.addEventListener('click', () => {
         const isOpen = toggleBtn.dataset.open === 'true';
         repliesContainer.classList.toggle('collapsed', isOpen);
         toggleBtn.dataset.open = isOpen ? 'false' : 'true';
         toggleBtn.innerHTML = isOpen
-          ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg> Show ${replyCount} repl${replyCount > 1 ? 'ies' : 'y'}`
+          ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg> View ${replyCount} repl${replyCount > 1 ? 'ies' : 'y'}`
           : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg> Hide replies`;
       });
 
-      // Insert toggle before replies container
       container.appendChild(toggleBtn);
-
-      comment.replies.forEach(reply => {
-        const replyEl = this.createCommentElement(reply, depth + 1);
-        repliesContainer.appendChild(replyEl);
-      });
       container.appendChild(repliesContainer);
     }
 
     return container;
+  }
+
+  flattenReplies(replies) {
+    const result = [];
+    for (const r of replies) {
+      result.push(r);
+      if (r.replies && r.replies.length) {
+        result.push(...this.flattenReplies(r.replies));
+      }
+    }
+    return result;
   }
 
   /* ─── Comment Form ─── */
