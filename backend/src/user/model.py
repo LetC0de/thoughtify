@@ -11,6 +11,9 @@ class UserModel(base):
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
     email = Column(String)
+    role = Column(String, default="USER")          # USER | ADMIN
+    status = Column(String, default="active")      # active | banned
+    last_seen = Column(DateTime(timezone=True), nullable=True)
 
 
 class EmailVerification(base):

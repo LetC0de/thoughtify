@@ -6,6 +6,11 @@ from src.user.router import user_router
 from src.likes.router import like_router
 from src.comments.router import comment_router
 from src.user.otp_router import otp_router
+from src.routers.admin_auth import router as admin_auth_router
+from src.routers.admin_dashboard import router as admin_dashboard_router
+from src.routers.admin_users import router as admin_users_router
+from src.routers.admin_posts import router as admin_posts_router
+from src.routers.admin_comments import router as admin_comments_router
 
 base.metadata.create_all(bind=engine)
 
@@ -20,6 +25,7 @@ app.add_middleware(
         "http://127.0.0.1:8000", "http://localhost:3000", "http://127.0.0.1:3000",
         "https://www.freespeak.in", "https://freespeak.in",
         "https://thoughtify-lmgv.onrender.com",
+        "http://localhost:5173", "http://127.0.0.1:5173",
         "null"
     ],
     allow_credentials=True,
@@ -32,3 +38,8 @@ app.include_router(user_router)
 app.include_router(like_router)
 app.include_router(comment_router)
 app.include_router(otp_router)
+app.include_router(admin_auth_router)
+app.include_router(admin_dashboard_router)
+app.include_router(admin_users_router)
+app.include_router(admin_posts_router)
+app.include_router(admin_comments_router)
