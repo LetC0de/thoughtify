@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List
 
 class settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env",extra="ignore")
@@ -9,11 +8,10 @@ class settings(BaseSettings):
     RESEND_API_KEY : str
     ALGORITHM : str
     EXP_TIME : int
-    CORS_ORIGINS : str = "http://localhost:5173,null"
-
-    @property
-    def cors_origins_list(self) -> List[str]:
-        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+    FE_DOMAIN : str = "http://localhost:5173"
+    FE_DOMAIN_WWW : str = "http://localhost:5173"
+    ADMIN_DOMAIN : str = "http://localhost:5173"
+    BACKEND_DOMAIN : str = "http://localhost:5173"
 
 
 settings = settings()
