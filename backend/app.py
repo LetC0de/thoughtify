@@ -6,11 +6,7 @@ from src.user.router import user_router
 from src.likes.router import like_router
 from src.comments.router import comment_router
 from src.user.otp_router import otp_router
-from src.routers.admin_auth import router as admin_auth_router
-from src.routers.admin_dashboard import router as admin_dashboard_router
-from src.routers.admin_users import router as admin_users_router
-from src.routers.admin_posts import router as admin_posts_router
-from src.routers.admin_comments import router as admin_comments_router
+from src.admin.router import admin_router
 
 base.metadata.create_all(bind=engine)
 
@@ -38,8 +34,4 @@ app.include_router(user_router)
 app.include_router(like_router)
 app.include_router(comment_router)
 app.include_router(otp_router)
-app.include_router(admin_auth_router)
-app.include_router(admin_dashboard_router)
-app.include_router(admin_users_router)
-app.include_router(admin_posts_router)
-app.include_router(admin_comments_router)
+app.include_router(admin_router)
