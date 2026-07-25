@@ -12,10 +12,10 @@ function Sidebar() {
   const location = useLocation()
 
   const links = [
-    { path: '/admin', label: 'Dashboard', icon: '◈' },
-    { path: '/admin/users', label: 'Users', icon: '●' },
-    { path: '/admin/thoughts', label: 'Thoughts', icon: '◇' },
-    { path: '/admin/comments', label: 'Comments', icon: '○' },
+    { path: '/', label: 'Dashboard', icon: '◈' },
+    { path: '/users', label: 'Users', icon: '●' },
+    { path: '/thoughts', label: 'Thoughts', icon: '◇' },
+    { path: '/comments', label: 'Comments', icon: '○' },
   ]
 
   return (
@@ -68,11 +68,11 @@ export default function App() {
       <Sidebar />
       <main className="main-content">
         <Routes>
-          <Route path="/admin" element={<DashboardPage />} />
-          <Route path="/admin/users" element={<UsersPage />} />
-          <Route path="/admin/thoughts" element={<ThoughtsPage />} />
-          <Route path="/admin/comments" element={<CommentsPage />} />
-          <Route path="*" element={<Navigate to="/admin" replace />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/thoughts" element={<ThoughtsPage />} />
+          <Route path="/comments" element={<CommentsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
