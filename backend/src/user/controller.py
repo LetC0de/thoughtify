@@ -4,7 +4,8 @@ from src.utils.mail import _send_email, welcome_email_html
 from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 from src.utils.settings import settings
-from src.user.model import UserModel, EmailVerification
+from src.user.model import UserModel
+from src.otp.model import EmailVerification
 from sqlalchemy.orm import Session
 from pwdlib import PasswordHash
 import jwt

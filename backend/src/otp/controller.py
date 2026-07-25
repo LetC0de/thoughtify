@@ -3,7 +3,8 @@ import hashlib
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from src.user.model import UserModel, EmailVerification
+from src.otp.model import EmailVerification
+from src.user.model import UserModel
 from src.utils.mail import _send_email, otp_email_html
 
 

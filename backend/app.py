@@ -5,7 +5,7 @@ from src.thoughts.router import thought_router
 from src.user.router import user_router
 from src.likes.router import like_router
 from src.comments.router import comment_router
-from src.user.otp_router import otp_router
+from src.otp.router import otp_router
 from src.admin.router import admin_router
 
 base.metadata.create_all(bind=engine)
