@@ -43,3 +43,4 @@ def get_optional_user(request: Request, db: Session = Depends(get_db)) -> UserMo
         return db.query(UserModel).filter(UserModel.id == user_id).first()
     except (InvalidTokenError, Exception):
         return None
+
