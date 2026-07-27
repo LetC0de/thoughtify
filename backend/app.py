@@ -25,7 +25,6 @@ app.add_middleware(
         settings.FE_DOMAIN,
         settings.FE_DOMAIN_WWW,
         settings.ADMIN_DOMAIN,
-        settings.BACKEND_DOMAIN,
     ],
     allow_credentials=True,
     allow_methods=["*"],

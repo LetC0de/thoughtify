@@ -11,7 +11,7 @@ class settings(BaseSettings):
     FE_DOMAIN : str = "http://localhost:5173"
     FE_DOMAIN_WWW : str = "http://localhost:5173"
     ADMIN_DOMAIN : str = "http://localhost:5173"
-    BACKEND_DOMAIN : str = "http://localhost:5173"
+    BACKEND_URL : str = "http://localhost:5173"
 
 
 settings = settings()
