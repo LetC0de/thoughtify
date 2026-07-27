@@ -76,6 +76,9 @@ def login_user(body:UserLoginSchema, db:Session):
     
     exp_time = datetime.now() + timedelta(minutes=settings.EXP_TIME)
 
+    user.last_seen = datetime.now()
+    db.commit()
+
     token = jwt.encode({
         "_id": user.id,
         "exp": exp_time.timestamp()
@@ -92,9 +95,9 @@ def is_authenticated(request:Request, db:Session):
 
         if not token:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found")
-        
+
         token =token.split(" ")[-1]
-        
+
         data = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
         user_id = data.get("_id")
 
@@ -102,6 +105,10 @@ def is_authenticated(request:Request, db:Session):
 
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+        # Update last_seen so the admin dashboard shows accurate online count
+        user.last_seen = datetime.now()
+        db.commit()
 
         return user
     except InvalidTokenError:
