@@ -51,6 +51,7 @@ export default function CommentsPage() {
       ) : (
         <>
           <div className="table-wrap">
+            <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>
@@ -86,6 +87,7 @@ export default function CommentsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
           <div className="pagination">

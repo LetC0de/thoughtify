@@ -47,6 +47,7 @@ export default function UsersPage() {
       ) : (
         <>
           <div className="table-wrap">
+            <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>
@@ -94,6 +95,7 @@ export default function UsersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
           <div className="pagination">

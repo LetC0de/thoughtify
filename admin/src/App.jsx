@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
@@ -6,7 +7,7 @@ import UsersPage from './pages/UsersPage'
 import ThoughtsPage from './pages/ThoughtsPage'
 import CommentsPage from './pages/CommentsPage'
 
-function Sidebar() {
+function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -18,42 +19,65 @@ function Sidebar() {
     { path: '/comments', label: 'Comments', icon: '○' },
   ]
 
+  const handleNav = (path) => {
+    navigate(path)
+    onClose?.()
+  }
+
+  const handleLogout = () => {
+    logout()
+    onClose?.()
+  }
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-brand">
-        <span className="sidebar-logo">◆</span>
-        <span>Thoughtify</span>
-      </div>
-      <nav className="sidebar-nav">
-        {links.map((l) => (
-          <button
-            key={l.path}
-            onClick={() => navigate(l.path)}
-            className={`sidebar-link ${location.pathname === l.path ? 'active' : ''}`}
-          >
-            <span className="sidebar-icon">{l.icon}</span>
-            {l.label}
-          </button>
-        ))}
-      </nav>
-      <div className="sidebar-footer">
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">{user?.username?.[0]?.toUpperCase() || 'A'}</div>
-          <div className="sidebar-user-info">
-            <div className="sidebar-user-name">{user?.name || user?.username}</div>
-            <div className="sidebar-user-role">Admin</div>
-          </div>
+    <>
+      {/* Overlay for mobile */}
+      <div
+        className={`sidebar-overlay ${open ? 'visible' : ''}`}
+        onClick={onClose}
+      />
+
+      <aside className={`sidebar ${open ? 'open' : ''}`}>
+        <div className="sidebar-brand">
+          <span className="sidebar-logo">◆</span>
+          <span>Thoughtify</span>
         </div>
-        <button className="sidebar-logout" onClick={logout}>
-          Logout
-        </button>
-      </div>
-    </aside>
+        <nav className="sidebar-nav">
+          {links.map((l) => (
+            <button
+              key={l.path}
+              onClick={() => handleNav(l.path)}
+              className={`sidebar-link ${location.pathname === l.path ? 'active' : ''}`}
+            >
+              <span className="sidebar-icon">{l.icon}</span>
+              {l.label}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <div className="sidebar-avatar">
+              {user?.username?.[0]?.toUpperCase() || 'A'}
+            </div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">
+                {user?.name || user?.username}
+              </div>
+              <div className="sidebar-user-role">Admin</div>
+            </div>
+          </div>
+          <button className="sidebar-logout" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }
 
 export default function App() {
   const { user, loading } = useAuth()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   if (loading) {
     return <div className="loading-screen">Loading…</div>
@@ -65,7 +89,23 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <Sidebar />
+      {/* Mobile header */}
+      <header className="mobile-header">
+        <button
+          className={`hamburger ${sidebarOpen ? 'open' : ''}`}
+          onClick={() => setSidebarOpen((v) => !v)}
+          aria-label="Toggle sidebar"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <span className="sidebar-logo">◆</span>
+        <span className="sidebar-brand-text">Thoughtify</span>
+      </header>
+
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
       <main className="main-content">
         <Routes>
           <Route path="/" element={<DashboardPage />} />

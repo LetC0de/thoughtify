@@ -51,6 +51,7 @@ export default function ThoughtsPage() {
       ) : (
         <>
           <div className="table-wrap">
+            <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>
@@ -88,6 +89,7 @@ export default function ThoughtsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
           <div className="pagination">
