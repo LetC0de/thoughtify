@@ -63,7 +63,7 @@ export default function ThoughtsPage() {
                   <th>Likes</th>
                   <th>Comments</th>
                   <th>Created</th>
-                  <th>Delete</th>
+                  <th className="col-del">Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -79,7 +79,7 @@ export default function ThoughtsPage() {
                     <td>{p.likes_count}</td>
                     <td>{p.comments_count}</td>
                     <td className="cell-mono">{formatDate(p.created_at)}</td>
-                    <td>
+                    <td className="col-del">
                       <button
                         className="btn-icon btn-danger"
                         onClick={() => setDeleteTarget(p)}

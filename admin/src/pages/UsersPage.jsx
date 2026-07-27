@@ -60,11 +60,11 @@ export default function UsersPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>Name</th>
                   <th>Username</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Delete</th>
+                  <th className="col-del">Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -76,16 +76,19 @@ export default function UsersPage() {
                 {users.map((u) => (
                   <tr key={u.id}>
                     <td>
-                      <div className="avatar-sm">{u.username?.[0]?.toUpperCase() || '?'}</div>
+                      <span className="user-name-cell">
+                        <span className="avatar-xs">{u.name?.[0]?.toUpperCase() || u.username?.[0]?.toUpperCase() || '?'}</span>
+                        {u.name || '—'}
+                      </span>
                     </td>
-                    <td className="cell-primary">{u.username}</td>
-                    <td className="cell-mono">{u.email || '—'}</td>
+                    <td>{u.username}</td>
+                    <td>{u.email || '—'}</td>
                     <td>
                       <span className={`badge ${u.role === 'ADMIN' ? 'badge-admin' : 'badge-user'}`}>
                         {u.role}
                       </span>
                     </td>
-                    <td>
+                    <td className="col-del">
                       {u.role !== 'ADMIN' && (
                         <button
                           className="btn-icon btn-danger"

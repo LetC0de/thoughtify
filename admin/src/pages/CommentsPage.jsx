@@ -62,7 +62,7 @@ export default function CommentsPage() {
                   <th>User</th>
                   <th>Replies</th>
                   <th>Created</th>
-                  <th>Delete</th>
+                  <th className="col-del">Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,7 +77,7 @@ export default function CommentsPage() {
                     <td>{c.author_username}</td>
                     <td>{c.reply_count}</td>
                     <td className="cell-mono">{formatDate(c.created_at)}</td>
-                    <td>
+                    <td className="col-del">
                       <button
                         className="btn-icon btn-danger"
                         onClick={() => setDeleteTarget(c)}
