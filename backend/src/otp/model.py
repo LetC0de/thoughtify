@@ -9,6 +9,7 @@ class EmailVerification(base):
     id = Column(Integer, primary_key=True)
     email = Column(String, nullable=False, index=True)
     otp_hash = Column(String, nullable=False)
+    purpose = Column(String, default="REGISTER")       # REGISTER | FORGOT_PASSWORD
     expires_at = Column(DateTime(timezone=True), nullable=False)
     verified = Column(Boolean, default=False)
     attempts = Column(Integer, default=0)

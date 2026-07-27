@@ -7,6 +7,7 @@ from src.user.router import user_router
 from src.likes.router import like_router
 from src.comments.router import comment_router
 from src.otp.router import otp_router
+from src.forgot_password.router import forgot_password_router
 from src.admin.router import admin_router
 
 base.metadata.create_all(bind=engine)
@@ -36,4 +37,5 @@ app.include_router(user_router)
 app.include_router(like_router)
 app.include_router(comment_router)
 app.include_router(otp_router)
+app.include_router(forgot_password_router)
 app.include_router(admin_router)

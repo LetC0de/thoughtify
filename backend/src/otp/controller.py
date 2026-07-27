@@ -16,14 +16,20 @@ def _generate_otp() -> str:
     return str(secrets.randbelow(900000) + 100000)
 
 
-def send_otp(email: str, db: Session):
-    existing = db.query(UserModel).filter(UserModel.email == email).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+def send_otp(email: str, db: Session, purpose: str = "REGISTER"):
+    if purpose == "REGISTER":
+        existing = db.query(UserModel).filter(UserModel.email == email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+    elif purpose == "FORGOT_PASSWORD":
+        user = db.query(UserModel).filter(UserModel.email == email).first()
+        if not user:
+            # Don't reveal whether email exists — return success regardless
+            return {"message": "If this email exists, an OTP has been sent.", "success": True}
 
     last = (
         db.query(EmailVerification)
-        .filter(EmailVerification.email == email)
+        .filter(EmailVerification.email == email, EmailVerification.purpose == purpose)
         .order_by(EmailVerification.created_at.desc())
         .first()
     )
@@ -36,17 +42,22 @@ def send_otp(email: str, db: Session):
     otp_hash = _hash_otp(otp)
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
 
-    db.add(EmailVerification(email=email, otp_hash=otp_hash, expires_at=expires_at))
+    db.add(EmailVerification(email=email, otp_hash=otp_hash, purpose=purpose, expires_at=expires_at))
     db.commit()
 
-    _send_email(email, "Your FreeSpeak Verification Code", otp_email_html(otp))
+    subject = "Your FreeSpeak Verification Code" if purpose == "REGISTER" else "Password Reset — FreeSpeak"
+    _send_email(email, subject, otp_email_html(otp))
     return {"message": "OTP sent", "success": True}
 
 
-def verify_otp(email: str, otp: str, db: Session):
+def verify_otp(email: str, otp: str, db: Session, purpose: str = "REGISTER"):
     record = (
         db.query(EmailVerification)
-        .filter(EmailVerification.email == email, EmailVerification.verified == False)
+        .filter(
+            EmailVerification.email == email,
+            EmailVerification.purpose == purpose,
+            EmailVerification.verified == False,
+        )
         .order_by(EmailVerification.created_at.desc())
         .first()
     )
@@ -64,4 +75,4 @@ def verify_otp(email: str, otp: str, db: Session):
 
     record.verified = True
     db.commit()
-    return {"message": "Email verified", "success": True}
+    return {"message": "Verified", "success": True}
