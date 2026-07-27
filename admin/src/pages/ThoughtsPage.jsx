@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api, formatDate } from '../lib'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function ThoughtsPage() {
   const [posts, setPosts] = useState([])
@@ -7,6 +8,7 @@ export default function ThoughtsPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const limit = 20
 
   const fetch = useCallback(async () => {
@@ -25,9 +27,10 @@ export default function ThoughtsPage() {
 
   const totalPages = Math.ceil(total / limit)
 
-  const deletePost = async (id) => {
-    if (!confirm('Delete this thought?')) return
-    await api(`/admin/posts/${id}`, { method: 'DELETE' })
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    await api(`/admin/posts/${deleteTarget.id}`, { method: 'DELETE' })
+    setDeleteTarget(null)
     fetch()
   }
 
@@ -79,7 +82,7 @@ export default function ThoughtsPage() {
                     <td>
                       <button
                         className="btn-icon btn-danger"
-                        onClick={() => deletePost(p.id)}
+                        onClick={() => setDeleteTarget(p)}
                         title="Delete thought"
                       >
                         🗑️
@@ -113,6 +116,15 @@ export default function ThoughtsPage() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete thought?"
+        message={`Permanently delete "${deleteTarget?.title || 'Untitled'}" by ${deleteTarget?.author_username}?`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

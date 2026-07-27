@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function UsersPage() {
   const [users, setUsers] = useState([])
@@ -7,6 +8,7 @@ export default function UsersPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const limit = 20
 
   const fetchUsers = useCallback(async () => {
@@ -27,9 +29,10 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(total / limit)
 
-  const deleteUser = async (id) => {
-    if (!confirm('Delete this user and all their content?')) return
-    await api(`/admin/users/${id}`, { method: 'DELETE' })
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    await api(`/admin/users/${deleteTarget.id}`, { method: 'DELETE' })
+    setDeleteTarget(null)
     fetchUsers()
   }
 
@@ -86,7 +89,7 @@ export default function UsersPage() {
                       {u.role !== 'ADMIN' && (
                         <button
                           className="btn-icon btn-danger"
-                          onClick={() => deleteUser(u.id)}
+                          onClick={() => setDeleteTarget(u)}
                           title="Delete user"
                         >
                           🗑️
@@ -121,6 +124,15 @@ export default function UsersPage() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete user?"
+        message={`This will permanently delete "${deleteTarget?.username}" and all their thoughts, comments, and likes.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

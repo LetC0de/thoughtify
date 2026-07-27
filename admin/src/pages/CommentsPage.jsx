@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api, formatDate } from '../lib'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function CommentsPage() {
   const [comments, setComments] = useState([])
@@ -7,6 +8,7 @@ export default function CommentsPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const limit = 20
 
   const fetch = useCallback(async () => {
@@ -25,9 +27,10 @@ export default function CommentsPage() {
 
   const totalPages = Math.ceil(total / limit)
 
-  const deleteComment = async (id) => {
-    if (!confirm('Delete this comment?')) return
-    await api(`/admin/comments/${id}`, { method: 'DELETE' })
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    await api(`/admin/comments/${deleteTarget.id}`, { method: 'DELETE' })
+    setDeleteTarget(null)
     fetch()
   }
 
@@ -77,7 +80,7 @@ export default function CommentsPage() {
                     <td>
                       <button
                         className="btn-icon btn-danger"
-                        onClick={() => deleteComment(c.id)}
+                        onClick={() => setDeleteTarget(c)}
                         title="Delete comment"
                       >
                         🗑️
@@ -111,6 +114,15 @@ export default function CommentsPage() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete comment?"
+        message={`Permanently delete this comment by ${deleteTarget?.author_username}?`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
