@@ -315,6 +315,12 @@ def delete_user(user_id: int, db: Session):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    if user.role == "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot delete an admin account",
+        )
+
     # Delete user's comments, likes, thoughts
     db.query(LikeModel).filter(LikeModel.user_id == user_id).delete()
     db.query(CommentModel).filter(CommentModel.user_id == user_id).delete()

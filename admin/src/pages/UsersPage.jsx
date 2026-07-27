@@ -83,13 +83,15 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        className="btn-icon btn-danger"
-                        onClick={() => deleteUser(u.id)}
-                        title="Delete user"
-                      >
-                        🗑️
-                      </button>
+                      {u.role !== 'ADMIN' && (
+                        <button
+                          className="btn-icon btn-danger"
+                          onClick={() => deleteUser(u.id)}
+                          title="Delete user"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
