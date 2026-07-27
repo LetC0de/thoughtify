@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_BASE = isDev && import.meta.env.VITE_API_URL_LOCAL
+  ? import.meta.env.VITE_API_URL_LOCAL
+  : import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
 export async function api(path, options = {}) {
   const token = localStorage.getItem('admin_token')
