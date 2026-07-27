@@ -55,7 +55,6 @@ export default function ActiveUsersPage() {
                   <th>Username</th>
                   <th>Email</th>
                   <th>ID</th>
-                  <th>Status</th>
                   <th>Last Seen</th>
                 </tr>
               </thead>
@@ -73,11 +72,6 @@ export default function ActiveUsersPage() {
                     <td className="cell-primary">{u.username}</td>
                     <td className="cell-mono">{u.email}</td>
                     <td className="cell-mono">#{u.id}</td>
-                    <td>
-                      <span className={`badge ${u.status === 'banned' ? 'badge-banned' : 'badge-active'}`}>
-                        {u.status}
-                      </span>
-                    </td>
                     <td className="cell-mono">{formatDate(u.last_seen)}</td>
                   </tr>
                 ))}

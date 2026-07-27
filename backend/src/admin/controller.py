@@ -19,16 +19,11 @@ password_hash = PasswordHash.recommended()
 def require_admin(
     user=Depends(is_authenticated),
 ):
-    """Verify the authenticated user has ADMIN role and is not banned."""
+    """Verify the authenticated user has ADMIN role."""
     if user.role != "ADMIN":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required",
-        )
-    if user.status == "banned":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account is banned",
         )
     return user
 
@@ -40,9 +35,6 @@ def login_admin(email: str, password: str, db: Session):
 
     if user.role != "ADMIN":
         raise HTTPException(status_code=403, detail="Not an admin account")
-
-    if user.status == "banned":
-        raise HTTPException(status_code=403, detail="Account is banned")
 
     if not password_hash.verify(password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -62,7 +54,6 @@ def login_admin(email: str, password: str, db: Session):
             "email": user.email,
             "name": user.name,
             "role": user.role,
-            "status": user.status,
         },
     }
 
@@ -74,7 +65,6 @@ def get_admin_profile(admin: UserModel):
         "email": admin.email,
         "name": admin.name,
         "role": admin.role,
-        "status": admin.status,
     }
 
 
@@ -126,7 +116,6 @@ def get_dashboard_stats(db: Session):
                 "username": u.username,
                 "email": u.email,
                 "name": u.name,
-                "status": u.status,
                 "created_at": str(u.created_at) if u.created_at else None,
             }
             for u in recent_users
@@ -180,7 +169,6 @@ def get_active_users(db: Session, search: str, page: int, limit: int):
                 "email": u.email or "—",
                 "name": u.name,
                 "role": u.role,
-                "status": u.status,
                 "last_seen": str(u.last_seen) if u.last_seen else None,
             }
             for u in users
@@ -216,8 +204,7 @@ def list_users(db: Session, search: str, page: int, limit: int):
                 "email": u.email,
                 "name": u.name,
                 "role": u.role,
-                "status": u.status,
-                "joined": str(u.id),
+                "joined": str(u.created_at) if u.created_at else None,
             }
             for u in users
         ],
@@ -249,7 +236,6 @@ def get_user_detail(user_id: int, db: Session):
         "email": user.email,
         "name": user.name,
         "role": user.role,
-        "status": user.status,
         "post_count": post_count,
         "comment_count": comment_count,
         "last_seen": str(user.last_seen) if user.last_seen else None,

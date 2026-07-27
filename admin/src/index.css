@@ -618,8 +618,6 @@ table { border-collapse: collapse; width: 100%; }
 .badge-admin { background: var(--accent-bg); color: var(--accent); }
 .badge-user { background: rgba(0,0,0,0.04); color: var(--text-secondary); }
 .badge-active { background: var(--success-bg); color: var(--success); }
-.badge-banned { background: var(--danger-bg); color: var(--danger); }
-
 /* ── Avatar sm ── */
 .avatar-sm {
   width: 30px;

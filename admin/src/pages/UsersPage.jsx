@@ -55,14 +55,13 @@ export default function UsersPage() {
                   <th>Username</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="empty-row">No users found</td>
+                    <td colSpan={5} className="empty-row">No users found</td>
                   </tr>
                 )}
                 {users.map((u) => (
@@ -75,11 +74,6 @@ export default function UsersPage() {
                     <td>
                       <span className={`badge ${u.role === 'ADMIN' ? 'badge-admin' : 'badge-user'}`}>
                         {u.role}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`badge ${u.status === 'banned' ? 'badge-banned' : 'badge-active'}`}>
-                        {u.status}
                       </span>
                     </td>
                     <td>

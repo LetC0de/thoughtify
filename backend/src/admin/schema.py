@@ -17,4 +17,3 @@ class AdminMeResponse(BaseModel):
     email: str
     name: str | None
     role: str
-    status: str
