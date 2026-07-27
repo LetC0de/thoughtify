@@ -88,7 +88,7 @@ def get_dashboard_stats(db: Session):
     five_mins_ago = datetime.now() - timedelta(minutes=5)
     online_users = (
         db.query(func.count(UserModel.id))
-        .filter(UserModel.last_seen >= five_mins_ago)
+        .filter(UserModel.last_seen >= five_mins_ago, UserModel.role != "ADMIN")
         .scalar()
     )
 
@@ -159,7 +159,7 @@ def get_dashboard_stats(db: Session):
 def get_active_users(db: Session, search: str, page: int, limit: int):
     offset = (page - 1) * limit
     five_mins_ago = datetime.now() - timedelta(minutes=5)
-    query = db.query(UserModel).filter(UserModel.last_seen >= five_mins_ago)
+    query = db.query(UserModel).filter(UserModel.last_seen >= five_mins_ago, UserModel.role != "ADMIN")
 
     if search:
         like = f"%{search}%"
