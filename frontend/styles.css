@@ -2058,6 +2058,115 @@ body::after {
   color: var(--accent-light);
 }
 
+/* ═══════════════════════════════════════════════════════
+   FORGOT PASSWORD — Steps
+   ═══════════════════════════════════════════════════════ */
+.fp-step { animation: formSlideIn 0.4s var(--ease-out-expo); }
+.fp-step-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+.fp-step-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.fp-step-desc strong { color: var(--text-secondary); }
+.fp-otp-input {
+  letter-spacing: 0.3em;
+  font-family: var(--font-mono);
+  font-size: 1.5rem !important;
+  text-align: center;
+  padding: 1rem !important;
+}
+.fp-timer {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-light);
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Password row (with toggle) ── */
+.password-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.password-row .form-input { flex: 1; }
+.btn-pw-toggle {
+  padding: 0.5rem !important;
+  width: 44px !important;
+  height: 44px !important;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* ── Password strength ── */
+.pw-strength {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+.pw-strength-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-deep);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.pw-strength-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  transition: all 0.3s var(--ease-out);
+}
+.pw-strength-fill.weak { width: 25%; background: var(--danger); }
+.pw-strength-fill.medium { width: 50%; background: #d4943a; }
+.pw-strength-fill.strong { width: 75%; background: #5ab46a; }
+.pw-strength-fill.very-strong { width: 100%; background: var(--success); }
+.pw-strength-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 4ch;
+}
+
+/* ── Password requirements ── */
+.pw-requirements {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.6rem;
+}
+.pw-requirements li {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: color 0.2s;
+}
+.pw-requirements li::before {
+  content: '○';
+  font-size: 0.6rem;
+}
+.pw-requirements li.met {
+  color: var(--success);
+}
+.pw-requirements li.met::before {
+  content: '●';
+}
+
 /* ─── Focus visible ─── */
 :focus-visible {
   outline: 2px solid var(--accent);

@@ -1035,5 +1035,336 @@ class Thoughtify {
   }
 }
 
+/* ═══════════════════════════════════════════════════════
+   FORGOT PASSWORD — integrated into Thoughtify
+   ═══════════════════════════════════════════════════════ */
+
+Thoughtify.prototype.initForgotPassword = function() {
+  // DOM refs
+  const $ = (id) => document.getElementById(id);
+  this.fp = {
+    overlay: $('forgotPasswordOverlay'),
+    closeBtn: $('fpCloseBtn'),
+    steps: {
+      email: $('fpStepEmail'),
+      otp: $('fpStepOtp'),
+      password: $('fpStepPassword'),
+      success: $('fpStepSuccess'),
+    },
+    email: $('fpEmail'),
+    emailError: $('fpEmailError'),
+    sendBtn: $('fpSendOtpBtn'),
+    sendSpinner: $('fpSendOtpSpinner'),
+    sendText: $('fpSendOtpText'),
+    otpInput: $('fpOtp'),
+    otpError: $('fpOtpError'),
+    otpTimer: $('fpTimer'),
+    otpEmailDisplay: $('fpOtpEmailDisplay'),
+    verifyBtn: $('fpVerifyOtpBtn'),
+    verifySpinner: $('fpVerifyOtpSpinner'),
+    verifyText: $('fpVerifyOtpText'),
+    resendBtn: $('fpResendOtpBtn'),
+    newPw: $('fpNewPassword'),
+    confirmPw: $('fpConfirmPassword'),
+    pwError: $('fpPwError'),
+    pwToggle: $('fpPwToggle'),
+    pwFill: $('fpPwFill'),
+    pwLabel: $('fpPwLabel'),
+    pwReqs: document.querySelectorAll('.pw-requirements li'),
+    resetBtn: $('fpResetBtn'),
+    resetSpinner: $('fpResetSpinner'),
+    resetText: $('fpResetText'),
+    loginNowBtn: $('fpLoginNowBtn'),
+  };
+
+  this.fpState = {
+    email: '',
+    resetToken: '',
+    otpExpiresAt: 0,
+    timerInterval: null,
+  };
+
+  // Bind events
+  this.fp.closeBtn.addEventListener('click', () => this.closeForgotPassword());
+  this.fp.overlay.addEventListener('click', (e) => {
+    if (e.target === this.fp.overlay) this.closeForgotPassword();
+  });
+  this.fp.sendBtn.addEventListener('click', () => this.handleFpSendOtp());
+  this.fp.email.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') this.handleFpSendOtp();
+  });
+  this.fp.verifyBtn.addEventListener('click', () => this.handleFpVerifyOtp());
+  this.fp.otpInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') this.handleFpVerifyOtp();
+  });
+  this.fp.otpInput.addEventListener('input', () => {
+    if (this.fp.otpInput.value.length === 6) this.handleFpVerifyOtp();
+  });
+  this.fp.resendBtn.addEventListener('click', () => this.handleFpSendOtp());
+  this.fp.newPw.addEventListener('input', () => this.checkFpPasswordStrength());
+  this.fp.pwToggle.addEventListener('click', () => this.toggleFpPassword());
+  this.fp.resetBtn.addEventListener('click', () => this.handleFpReset());
+  this.fp.confirmPw.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') this.handleFpReset();
+  });
+  this.fp.loginNowBtn.addEventListener('click', () => {
+    this.closeForgotPassword();
+    this.openAuth('login');
+  });
+
+  // Back buttons
+  document.querySelectorAll('[data-fp-back]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.fpBack === 'email') this.showFpStep('email');
+    });
+  });
+
+  // "Forgot password?" link on login form
+  document.querySelectorAll('[data-switch]').forEach(btn => {
+    if (btn.dataset.switch === 'forgot-password') {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closeAuth();
+        this.openForgotPassword();
+      });
+    }
+  });
+};
+
+Thoughtify.prototype.openForgotPassword = function() {
+  this.resetFpState();
+  this.fp.overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  this.showFpStep('email');
+  setTimeout(() => this.fp.email.focus(), 300);
+};
+
+Thoughtify.prototype.closeForgotPassword = function() {
+  this.fp.overlay.style.display = 'none';
+  document.body.style.overflow = '';
+  if (this.fpState.timerInterval) clearInterval(this.fpState.timerInterval);
+};
+
+Thoughtify.prototype.resetFpState = function() {
+  this.fp.email.value = '';
+  this.fp.otpInput.value = '';
+  this.fp.newPw.value = '';
+  this.fp.confirmPw.value = '';
+  this.fp.emailError.textContent = '';
+  this.fp.otpError.textContent = '';
+  this.fp.pwError.textContent = '';
+  this.fpState.resetToken = '';
+  this.fpState.otpExpiresAt = 0;
+  this.fp.sendBtn.disabled = false;
+  this.fp.sendText.textContent = 'Send OTP';
+  this.fp.sendSpinner.style.display = 'none';
+  this.fp.verifyBtn.disabled = false;
+  this.fp.verifyText.textContent = 'Verify';
+  this.fp.verifySpinner.style.display = 'none';
+  this.fp.resendBtn.disabled = false;
+  this.fp.resendBtn.textContent = 'Resend OTP';
+  this.fp.pwFill.className = 'pw-strength-fill';
+  this.fp.pwLabel.textContent = '';
+  this.resetPwReqs();
+  this.fp.newPw.type = 'password';
+  if (this.fpState.timerInterval) clearInterval(this.fpState.timerInterval);
+};
+
+Thoughtify.prototype.resetPwReqs = function() {
+  this.fp.pwReqs.forEach(el => el.classList.remove('met'));
+};
+
+Thoughtify.prototype.showFpStep = function(step) {
+  Object.values(this.fp.steps).forEach(el => el.style.display = 'none');
+  if (step === 'email') {
+    this.fp.steps.email.style.display = 'block';
+    this.fp.emailError.textContent = '';
+  } else if (step === 'otp') {
+    this.fp.steps.otp.style.display = 'block';
+    this.startFpTimer();
+    this.fp.otpInput.focus();
+  } else if (step === 'password') {
+    this.fp.steps.password.style.display = 'block';
+    setTimeout(() => this.fp.newPw.focus(), 300);
+  } else if (step === 'success') {
+    this.fp.steps.success.style.display = 'block';
+  }
+};
+
+/* ── Step 1: Send OTP ── */
+
+Thoughtify.prototype.handleFpSendOtp = async function() {
+  const email = this.fp.email.value.trim();
+  if (!email || !email.includes('@')) {
+    this.fp.emailError.textContent = 'Please enter a valid email.';
+    return;
+  }
+  this.fp.emailError.textContent = '';
+  this.fp.sendBtn.disabled = true;
+  this.fp.sendText.textContent = 'Sending...';
+  this.fp.sendSpinner.style.display = 'inline-block';
+  this.fp.resendBtn.disabled = true;
+  this.fp.resendBtn.textContent = 'Sending...';
+
+  try {
+    const res = await fetch(`${this.apiBaseUser.replace('/user', '')}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed');
+
+    this.fpState.email = email;
+    this.fp.otpEmailDisplay.textContent = email;
+    this.showFpStep('otp');
+  } catch (err) {
+    this.fp.emailError.textContent = err.message;
+  } finally {
+    this.fp.sendBtn.disabled = false;
+    this.fp.sendText.textContent = 'Send OTP';
+    this.fp.sendSpinner.style.display = 'none';
+    this.fp.resendBtn.disabled = false;
+    this.fp.resendBtn.textContent = 'Resend OTP';
+  }
+};
+
+/* ── Step 2: Verify OTP ── */
+
+Thoughtify.prototype.startFpTimer = function() {
+  if (this.fpState.timerInterval) clearInterval(this.fpState.timerInterval);
+  this.fpState.otpExpiresAt = Date.now() + 5 * 60 * 1000;
+  this.fpState.timerInterval = setInterval(() => {
+    const remaining = Math.max(0, this.fpState.otpExpiresAt - Date.now());
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    this.fp.otpTimer.textContent = `⏱ ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    if (remaining <= 0) {
+      clearInterval(this.fpState.timerInterval);
+      this.fp.otpTimer.textContent = '⏱ Code expired — request a new one.';
+    }
+  }, 1000);
+};
+
+Thoughtify.prototype.handleFpVerifyOtp = async function() {
+  const otp = this.fp.otpInput.value.trim();
+  if (otp.length !== 6) return;
+
+  this.fp.verifyBtn.disabled = true;
+  this.fp.verifyText.textContent = 'Verifying...';
+  this.fp.verifySpinner.style.display = 'inline-block';
+  this.fp.otpError.textContent = '';
+
+  try {
+    const res = await fetch(`${this.apiBaseUser.replace('/user', '')}/auth/verify-reset-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: this.fpState.email, otp }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Invalid OTP');
+
+    this.fpState.resetToken = data.reset_token;
+    if (this.fpState.timerInterval) clearInterval(this.fpState.timerInterval);
+    this.showFpStep('password');
+  } catch (err) {
+    this.fp.otpError.textContent = err.message;
+  } finally {
+    this.fp.verifyBtn.disabled = false;
+    this.fp.verifyText.textContent = 'Verify';
+    this.fp.verifySpinner.style.display = 'none';
+  }
+};
+
+/* ── Step 3: New Password ── */
+
+Thoughtify.prototype.checkFpPasswordStrength = function() {
+  const pw = this.fp.newPw.value;
+  const checks = {
+    length: pw.length >= 8,
+    upper: /[A-Z]/.test(pw),
+    number: /\d/.test(pw),
+    special: /[!@#$%^&*(),.?":{}|<>_\-]/.test(pw),
+  };
+
+  this.fp.pwReqs.forEach(el => {
+    const req = el.dataset.req;
+    el.classList.toggle('met', checks[req]);
+  });
+
+  const metCount = Object.values(checks).filter(Boolean).length;
+  if (!pw) {
+    this.fp.pwFill.className = 'pw-strength-fill';
+    this.fp.pwLabel.textContent = '';
+  } else if (metCount <= 1) {
+    this.fp.pwFill.className = 'pw-strength-fill weak';
+    this.fp.pwLabel.textContent = 'Weak';
+  } else if (metCount <= 2) {
+    this.fp.pwFill.className = 'pw-strength-fill medium';
+    this.fp.pwLabel.textContent = 'Medium';
+  } else if (metCount <= 3) {
+    this.fp.pwFill.className = 'pw-strength-fill strong';
+    this.fp.pwLabel.textContent = 'Strong';
+  } else {
+    this.fp.pwFill.className = 'pw-strength-fill very-strong';
+    this.fp.pwLabel.textContent = 'Very Strong';
+  }
+};
+
+Thoughtify.prototype.toggleFpPassword = function() {
+  const input = this.fp.newPw;
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  this.fp.pwToggle.innerHTML = isPassword
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+};
+
+Thoughtify.prototype.handleFpReset = async function() {
+  const newPw = this.fp.newPw.value;
+  const confirmPw = this.fp.confirmPw.value;
+  this.fp.pwError.textContent = '';
+
+  if (!newPw || !confirmPw) {
+    this.fp.pwError.textContent = 'Please fill in both fields.';
+    return;
+  }
+  if (newPw.length < 8) {
+    this.fp.pwError.textContent = 'Password must be at least 8 characters.';
+    return;
+  }
+  if (newPw !== confirmPw) {
+    this.fp.pwError.textContent = 'Passwords do not match.';
+    return;
+  }
+  if (!/[A-Z]/.test(newPw) || !/\d/.test(newPw) || !/[!@#$%^&*(),.?":{}|<>_\-]/.test(newPw)) {
+    this.fp.pwError.textContent = 'Password must contain uppercase, number, and special character.';
+    return;
+  }
+
+  this.fp.resetBtn.disabled = true;
+  this.fp.resetText.textContent = 'Updating...';
+  this.fp.resetSpinner.style.display = 'inline-block';
+
+  try {
+    const res = await fetch(`${this.apiBaseUser.replace('/user', '')}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reset_token: this.fpState.resetToken, new_password: newPw }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed');
+
+    this.showFpStep('success');
+  } catch (err) {
+    this.fp.pwError.textContent = err.message;
+  } finally {
+    this.fp.resetBtn.disabled = false;
+    this.fp.resetText.textContent = 'Update Password';
+    this.fp.resetSpinner.style.display = 'none';
+  }
+};
+
 /* ─── Boot ─── */
-new Thoughtify();
+const app = new Thoughtify();
+app.initForgotPassword();

@@ -216,6 +216,9 @@
             Don't have an account?
             <button type="button" class="btn-link" data-switch="register">Create one</button>
           </p>
+          <p class="auth-alt" style="margin-top: 0.15rem;">
+            <button type="button" class="btn-link" data-switch="forgot-password">Forgot password?</button>
+          </p>
         </form>
 
         <!-- Register -->
@@ -419,6 +422,111 @@
       <div class="modal-actions">
         <button class="btn btn-secondary" id="modalCancel">Cancel</button>
         <button class="btn btn-danger" id="modalConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       FORGOT PASSWORD OVERLAY
+       ═══════════════════════════════════════════════════════ -->
+  <div class="auth-overlay" id="forgotPasswordOverlay" style="display: none;">
+    <div class="auth-backdrop" aria-hidden="true"></div>
+
+    <div class="auth-container" style="max-width: 440px;">
+      <div class="auth-card" id="fpCard">
+        <button class="auth-close" id="fpCloseBtn" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+
+        <a href="/" class="auth-logo" aria-label="Thoughtify home">
+          <span class="auth-logo-icon" aria-hidden="true">✦</span>
+          <span class="auth-logo-text">Thought<span>ify</span></span>
+        </a>
+
+        <!-- Step 1: Email -->
+        <div class="fp-step" id="fpStepEmail">
+          <h3 class="fp-step-title">Forgot Password?</h3>
+          <p class="fp-step-desc">Enter your registered email and we'll send a verification code.</p>
+          <div class="form-group">
+            <label for="fpEmail" class="form-label">Email</label>
+            <input type="email" id="fpEmail" class="form-input" placeholder="your@email.com" required autocomplete="email" />
+          </div>
+          <div class="auth-error" id="fpEmailError" role="alert"></div>
+          <button class="btn btn-primary btn-full" id="fpSendOtpBtn">
+            <span class="btn-spinner" id="fpSendOtpSpinner" style="display: none;"></span>
+            <span id="fpSendOtpText">Send OTP</span>
+          </button>
+          <p class="auth-alt">
+            <button type="button" class="btn-link" data-fp-back="email">Back to Login</button>
+          </p>
+        </div>
+
+        <!-- Step 2: OTP Verify -->
+        <div class="fp-step" id="fpStepOtp" style="display: none;">
+          <h3 class="fp-step-title">Verify OTP</h3>
+          <p class="fp-step-desc">Enter the 6-digit code sent to <strong id="fpOtpEmailDisplay"></strong></p>
+          <div class="form-group">
+            <label for="fpOtp" class="form-label">OTP Code</label>
+            <input type="text" id="fpOtp" class="form-input fp-otp-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+          </div>
+          <div class="fp-timer" id="fpTimer">⏱ 05:00</div>
+          <div class="auth-error" id="fpOtpError" role="alert"></div>
+          <button class="btn btn-primary btn-full" id="fpVerifyOtpBtn">
+            <span class="btn-spinner" id="fpVerifyOtpSpinner" style="display: none;"></span>
+            <span id="fpVerifyOtpText">Verify</span>
+          </button>
+          <p class="auth-alt">
+            Didn't get it?
+            <button type="button" class="btn-link" id="fpResendOtpBtn">Resend OTP</button>
+          </p>
+          <p class="auth-alt" style="margin-top: 0.15rem;">
+            <button type="button" class="btn-link" data-fp-back="email">← Change email</button>
+          </p>
+        </div>
+
+        <!-- Step 3: New Password -->
+        <div class="fp-step" id="fpStepPassword" style="display: none;">
+          <h3 class="fp-step-title">Create New Password</h3>
+          <p class="fp-step-desc">Must be at least 8 characters with 1 uppercase, 1 number, and 1 special character.</p>
+          <div class="form-group">
+            <label for="fpNewPassword" class="form-label">New Password</label>
+            <div class="password-row">
+              <input type="password" id="fpNewPassword" class="form-input" placeholder="••••••••" required autocomplete="new-password" />
+              <button type="button" class="btn btn-ghost btn-pw-toggle" id="fpPwToggle" aria-label="Toggle password visibility">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="pw-strength" id="fpPwStrength">
+              <div class="pw-strength-bar"><div class="pw-strength-fill" id="fpPwFill"></div></div>
+              <span class="pw-strength-label" id="fpPwLabel"></span>
+            </div>
+            <ul class="pw-requirements" id="fpPwReqs">
+              <li data-req="length">Minimum 8 characters</li>
+              <li data-req="upper">One uppercase letter</li>
+              <li data-req="number">One number</li>
+              <li data-req="special">One special character</li>
+            </ul>
+          </div>
+          <div class="form-group">
+            <label for="fpConfirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" id="fpConfirmPassword" class="form-input" placeholder="••••••••" required />
+          </div>
+          <div class="auth-error" id="fpPwError" role="alert"></div>
+          <button class="btn btn-primary btn-full" id="fpResetBtn">
+            <span class="btn-spinner" id="fpResetSpinner" style="display: none;"></span>
+            <span id="fpResetText">Update Password</span>
+          </button>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div class="fp-step" id="fpStepSuccess" style="display: none;">
+          <div style="text-align: center; padding: 1rem 0;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">✅</div>
+            <h3 class="fp-step-title">Password Reset Successful</h3>
+            <p class="fp-step-desc" style="margin-bottom: 1.5rem;">Your password has been updated. You can now log in with your new password.</p>
+            <button class="btn btn-primary btn-full" id="fpLoginNowBtn">Login Now</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
