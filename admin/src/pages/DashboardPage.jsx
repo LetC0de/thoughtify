@@ -24,7 +24,7 @@ export default function DashboardPage() {
     { label: 'Users', value: stats.total_users, icon: '👥' },
     { label: 'Thoughts', value: stats.total_posts, icon: '📝' },
     { label: 'Comments', value: stats.total_comments, icon: '💬' },
-    { label: 'Online', value: stats.online_users, icon: '🟢' },
+    { label: 'Active Users', value: stats.online_users, icon: '🟢' },
   ]
 
   return (
