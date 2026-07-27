@@ -59,7 +59,7 @@ export default function CommentsPage() {
                   <th>User</th>
                   <th>Replies</th>
                   <th>Created</th>
-                  <th></th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -80,7 +80,7 @@ export default function CommentsPage() {
                         onClick={() => deleteComment(c.id)}
                         title="Delete comment"
                       >
-                        ✕
+                        🗑️
                       </button>
                     </td>
                   </tr>

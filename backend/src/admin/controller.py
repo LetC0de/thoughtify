@@ -9,7 +9,7 @@ from src.utils.db import get_db
 from src.utils.settings import settings
 from src.utils.helper import is_authenticated
 from src.user.model import UserModel
-from src.thoughts.model import thought_model, CommentModel
+from src.thoughts.model import thought_model, CommentModel, LikeModel
 
 password_hash = PasswordHash.recommended()
 
@@ -214,34 +214,6 @@ def list_users(db: Session, search: str, page: int, limit: int):
     }
 
 
-def get_user_detail(user_id: int, db: Session):
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    post_count = (
-        db.query(func.count(thought_model.id))
-        .filter(thought_model.user_id == user_id)
-        .scalar()
-    )
-    comment_count = (
-        db.query(func.count(CommentModel.id))
-        .filter(CommentModel.user_id == user_id)
-        .scalar()
-    )
-
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "name": user.name,
-        "role": user.role,
-        "post_count": post_count,
-        "comment_count": comment_count,
-        "last_seen": str(user.last_seen) if user.last_seen else None,
-    }
-
-
 # ── Posts ──
 
 def list_posts(db: Session, search: str, page: int, limit: int):
@@ -334,6 +306,22 @@ def delete_post(post_id: int, db: Session):
     db.delete(post)
     db.commit()
     return {"message": "Post deleted"}
+
+
+# ── User Management ──
+
+def delete_user(user_id: int, db: Session):
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Delete user's comments, likes, thoughts
+    db.query(LikeModel).filter(LikeModel.user_id == user_id).delete()
+    db.query(CommentModel).filter(CommentModel.user_id == user_id).delete()
+    db.query(thought_model).filter(thought_model.user_id == user_id).delete()
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted"}
 
 
 # ── Comments ──

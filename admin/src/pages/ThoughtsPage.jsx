@@ -60,7 +60,7 @@ export default function ThoughtsPage() {
                   <th>Likes</th>
                   <th>Comments</th>
                   <th>Created</th>
-                  <th></th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,7 +82,7 @@ export default function ThoughtsPage() {
                         onClick={() => deletePost(p.id)}
                         title="Delete thought"
                       >
-                        ✕
+                        🗑️
                       </button>
                     </td>
                   </tr>

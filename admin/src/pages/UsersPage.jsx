@@ -27,6 +27,12 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(total / limit)
 
+  const deleteUser = async (id) => {
+    if (!confirm('Delete this user and all their content?')) return
+    await api(`/admin/users/${id}`, { method: 'DELETE' })
+    fetchUsers()
+  }
+
   return (
     <div className="page">
       <div className="page-header">
@@ -55,7 +61,7 @@ export default function UsersPage() {
                   <th>Username</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th></th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -78,11 +84,11 @@ export default function UsersPage() {
                     </td>
                     <td>
                       <button
-                        className="btn-icon"
-                        onClick={() => window.open(`/admin/users/${u.id}`, '_blank')}
-                        title="View user"
+                        className="btn-icon btn-danger"
+                        onClick={() => deleteUser(u.id)}
+                        title="Delete user"
                       >
-                        →
+                        🗑️
                       </button>
                     </td>
                   </tr>

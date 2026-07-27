@@ -643,9 +643,17 @@ table { border-collapse: collapse; width: 100%; }
   cursor: pointer;
   color: var(--text-secondary);
   transition: all 0.15s;
+  line-height: 1;
 }
 .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
 .btn-icon.btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── Actions cell (multiple buttons) ── */
+.actions-cell {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
 
 /* ══════════════════════════════════════════════════════════
    PAGINATION

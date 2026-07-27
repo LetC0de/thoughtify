@@ -54,13 +54,13 @@ def list_users(
     return controller.list_users(db, search, page, limit)
 
 
-@admin_router.get("/users/{user_id}")
-def get_user(
+@admin_router.delete("/users/{user_id}")
+def delete_user(
     user_id: int,
     admin=Depends(controller.require_admin),
     db: Session = Depends(get_db),
 ):
-    return controller.get_user_detail(user_id, db)
+    return controller.delete_user(user_id, db)
 
 
 # ── Posts ──
