@@ -2,7 +2,7 @@ from src.user.schema import UserSchema, UserLoginSchema
 from fastapi import HTTPException, status, Request, BackgroundTasks
 from src.utils.mail import _send_email, welcome_email_html
 from jwt.exceptions import InvalidTokenError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from src.utils.settings import settings
 from src.user.model import UserModel
 from src.otp.model import EmailVerification
@@ -74,9 +74,9 @@ def login_user(body:UserLoginSchema, db:Session):
     if not password_hash.verify(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
     
-    exp_time = datetime.now() + timedelta(minutes=settings.EXP_TIME)
+    exp_time = datetime.now(timezone.utc) + timedelta(minutes=settings.EXP_TIME)
 
-    user.last_seen = datetime.now()
+    user.last_seen = datetime.now(timezone.utc)
     db.commit()
 
     token = jwt.encode({
@@ -107,7 +107,7 @@ def is_authenticated(request:Request, db:Session):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
         # Update last_seen so the admin dashboard shows accurate online count
-        user.last_seen = datetime.now()
+        user.last_seen = datetime.now(timezone.utc)
         db.commit()
 
         return user

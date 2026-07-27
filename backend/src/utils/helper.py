@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.user.model import UserModel
 from jwt.exceptions import InvalidTokenError
 from src.utils.db import get_db
-from datetime import datetime
+from datetime import datetime, timezone
 import jwt
 
 
@@ -28,7 +28,7 @@ def is_authenticated(request:Request, db:Session = Depends(get_db)):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
         # Update last_seen so the admin dashboard shows accurate online count
-        user.last_seen = datetime.now()
+        user.last_seen = datetime.now(timezone.utc)
         db.commit()
 
         return user
@@ -47,7 +47,7 @@ def get_optional_user(request: Request, db: Session = Depends(get_db)) -> UserMo
         user_id = data.get("_id")
         user = db.query(UserModel).filter(UserModel.id == user_id).first()
         if user:
-            user.last_seen = datetime.now()
+            user.last_seen = datetime.now(timezone.utc)
             db.commit()
         return user
     except (InvalidTokenError, Exception):

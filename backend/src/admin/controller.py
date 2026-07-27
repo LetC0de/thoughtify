@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pwdlib import PasswordHash
 import jwt
 
@@ -39,7 +39,7 @@ def login_admin(email: str, password: str, db: Session):
     if not password_hash.verify(password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    exp_time = datetime.now() + timedelta(hours=24)
+    exp_time = datetime.now(timezone.utc) + timedelta(hours=24)
     token = jwt.encode(
         {"_id": user.id, "exp": exp_time.timestamp()},
         settings.SECRET_KEY,
@@ -75,7 +75,7 @@ def get_dashboard_stats(db: Session):
     total_posts = db.query(func.count(thought_model.id)).scalar()
     total_comments = db.query(func.count(CommentModel.id)).scalar()
 
-    five_mins_ago = datetime.now() - timedelta(minutes=5)
+    five_mins_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
     online_users = (
         db.query(func.count(UserModel.id))
         .filter(UserModel.last_seen >= five_mins_ago, UserModel.role != "ADMIN")
@@ -147,7 +147,7 @@ def get_dashboard_stats(db: Session):
 
 def get_active_users(db: Session, search: str, page: int, limit: int):
     offset = (page - 1) * limit
-    five_mins_ago = datetime.now() - timedelta(minutes=5)
+    five_mins_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
     query = db.query(UserModel).filter(UserModel.last_seen >= five_mins_ago, UserModel.role != "ADMIN")
 
     if search:
