@@ -460,9 +460,20 @@ table { border-collapse: collapse; width: 100%; }
   box-shadow: var(--shadow);
   transition: box-shadow 0.2s, transform 0.2s;
 }
-.stat-card:hover {
+.stat-card-clickable {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+.stat-card-clickable:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.stat-card-clickable:active {
+  transform: translateY(0);
 }
 .stat-icon {
   font-size: 1.5rem;

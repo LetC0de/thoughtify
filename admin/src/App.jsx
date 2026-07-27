@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage'
 import UsersPage from './pages/UsersPage'
 import ThoughtsPage from './pages/ThoughtsPage'
 import CommentsPage from './pages/CommentsPage'
+import ActiveUsersPage from './pages/ActiveUsersPage'
 
 function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth()
@@ -17,6 +18,7 @@ function Sidebar({ open, onClose }) {
     { path: '/users', label: 'Users', icon: '●' },
     { path: '/thoughts', label: 'Thoughts', icon: '◇' },
     { path: '/comments', label: 'Comments', icon: '○' },
+    { path: '/active-users', label: 'Active Users', icon: '🟢' },
   ]
 
   const handleNav = (path) => {
@@ -112,6 +114,7 @@ export default function App() {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/thoughts" element={<ThoughtsPage />} />
           <Route path="/comments" element={<CommentsPage />} />
+          <Route path="/active-users" element={<ActiveUsersPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

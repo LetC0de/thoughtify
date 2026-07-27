@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api, formatDate } from '../lib'
 
 export default function DashboardPage() {
+  const navigate = useNavigate()
   const [stats, setStats] = useState(null)
   const [recentUsers, setRecentUsers] = useState([])
   const [recentPosts, setRecentPosts] = useState([])
@@ -21,10 +23,10 @@ export default function DashboardPage() {
   }
 
   const cards = [
-    { label: 'Users', value: stats.total_users, icon: '👥' },
-    { label: 'Thoughts', value: stats.total_posts, icon: '📝' },
-    { label: 'Comments', value: stats.total_comments, icon: '💬' },
-    { label: 'Active Users', value: stats.online_users, icon: '🟢' },
+    { label: 'Users', value: stats.total_users, icon: '👥', to: '/users' },
+    { label: 'Thoughts', value: stats.total_posts, icon: '📝', to: '/thoughts' },
+    { label: 'Comments', value: stats.total_comments, icon: '💬', to: '/comments' },
+    { label: 'Active Users', value: stats.online_users, icon: '🟢', to: '/active-users' },
   ]
 
   return (
@@ -33,13 +35,13 @@ export default function DashboardPage() {
 
       <div className="stat-grid">
         {cards.map((c) => (
-          <div key={c.label} className="stat-card">
+          <button key={c.label} className="stat-card stat-card-clickable" onClick={() => navigate(c.to)}>
             <span className="stat-icon">{c.icon}</span>
             <div>
               <div className="stat-value">{c.value}</div>
               <div className="stat-label">{c.label}</div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 

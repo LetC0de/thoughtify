@@ -154,6 +154,43 @@ def get_dashboard_stats(db: Session):
     }
 
 
+# ── Active Users ──
+
+def get_active_users(db: Session, search: str, page: int, limit: int):
+    offset = (page - 1) * limit
+    five_mins_ago = datetime.now() - timedelta(minutes=5)
+    query = db.query(UserModel).filter(UserModel.last_seen >= five_mins_ago)
+
+    if search:
+        like = f"%{search}%"
+        query = query.filter(
+            UserModel.username.ilike(like)
+            | UserModel.email.ilike(like)
+            | UserModel.name.ilike(like)
+        )
+
+    total = query.count()
+    users = query.order_by(UserModel.last_seen.desc()).offset(offset).limit(limit).all()
+
+    return {
+        "users": [
+            {
+                "id": u.id,
+                "username": u.username,
+                "email": u.email or "—",
+                "name": u.name,
+                "role": u.role,
+                "status": u.status,
+                "last_seen": str(u.last_seen) if u.last_seen else None,
+            }
+            for u in users
+        ],
+        "total": total,
+        "page": page,
+        "limit": limit,
+    }
+
+
 # ── Users ──
 
 def list_users(db: Session, search: str, page: int, limit: int):
