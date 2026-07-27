@@ -127,7 +127,7 @@ def get_dashboard_stats(db: Session):
                 "email": u.email,
                 "name": u.name,
                 "status": u.status,
-                "created_at": str(u.id),
+                "created_at": str(u.created_at) if u.created_at else None,
             }
             for u in recent_users
         ],
