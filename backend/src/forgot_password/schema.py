@@ -18,6 +18,7 @@ class ResetPasswordRequest(BaseModel):
 class ForgotPasswordResponse(BaseModel):
     message: str
     success: bool = True
+    email_found: bool = False
 
 
 class VerifyResetOTPResponse(BaseModel):

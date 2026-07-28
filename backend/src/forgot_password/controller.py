@@ -28,7 +28,7 @@ def forgot_password(email: str, db: Session):
     """Trigger OTP for password reset — always return success regardless."""
     user = db.query(UserModel).filter(UserModel.email == email).first()
     if not user:
-        return {"message": "If this email exists, an OTP has been sent.", "success": True}
+        return {"message": "If this email exists, an OTP has been sent.", "success": True, "email_found": False}
 
     last = (
         db.query(EmailVerification)
@@ -57,7 +57,7 @@ def forgot_password(email: str, db: Session):
     from src.utils.mail import _send_email, otp_email_html
     _send_email(email, "Password Reset — FreeSpeak", otp_email_html(otp))
 
-    return {"message": "If this email exists, an OTP has been sent.", "success": True}
+    return {"message": "If this email exists, an OTP has been sent.", "success": True, "email_found": True}
 
 
 # ── Verify Reset OTP (Step 2) ──

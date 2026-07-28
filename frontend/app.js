@@ -1127,7 +1127,12 @@ Thoughtify.prototype.initForgotPassword = function() {
   // Back buttons
   document.querySelectorAll('[data-fp-back]').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (btn.dataset.fpBack === 'email') this.showFpStep('email');
+      if (btn.dataset.fpBack === 'login') {
+        this.closeForgotPassword();
+        this.openAuth('login');
+      } else if (btn.dataset.fpBack === 'email') {
+        this.showFpStep('email');
+      }
     });
   });
 
@@ -1175,15 +1180,10 @@ Thoughtify.prototype.resetFpState = function() {
   this.fp.verifySpinner.style.display = 'none';
   this.fp.resendBtn.disabled = false;
   this.fp.resendBtn.textContent = 'Resend OTP';
-  this.fp.pwFill.className = 'pw-strength-fill';
-  this.fp.pwLabel.textContent = '';
-  this.resetPwReqs();
+  this.fp.pwFill && (this.fp.pwFill.className = 'pw-strength-fill');
+  this.fp.pwLabel && (this.fp.pwLabel.textContent = '');
   this.fp.newPw.type = 'password';
   if (this.fpState.timerInterval) clearInterval(this.fpState.timerInterval);
-};
-
-Thoughtify.prototype.resetPwReqs = function() {
-  this.fp.pwReqs.forEach(el => el.classList.remove('met'));
 };
 
 Thoughtify.prototype.showFpStep = function(step) {
@@ -1227,11 +1227,24 @@ Thoughtify.prototype.handleFpSendOtp = async function() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed');
 
+    // If backend says email not found, show error on frontend
+    if (data.email_found === false) {
+      this.fp.emailError.textContent = 'No account found with this email.';
+      this.fp.sendBtn.disabled = false;
+      this.fp.sendText.textContent = 'Send OTP';
+      this.fp.sendSpinner.style.display = 'none';
+      this.fp.resendBtn.disabled = false;
+      this.fp.resendBtn.textContent = 'Resend OTP';
+      return;
+    }
+
     this.fpState.email = email;
     this.fp.otpEmailDisplay.textContent = email;
     this.showFpStep('otp');
   } catch (err) {
+    // Show error — visible on both email step (#fpEmailError) and otp step (#fpOtpError)
     this.fp.emailError.textContent = err.message;
+    this.fp.otpError.textContent = err.message;
   } finally {
     this.fp.sendBtn.disabled = false;
     this.fp.sendText.textContent = 'Send OTP';
@@ -1291,36 +1304,7 @@ Thoughtify.prototype.handleFpVerifyOtp = async function() {
 /* ── Step 3: New Password ── */
 
 Thoughtify.prototype.checkFpPasswordStrength = function() {
-  const pw = this.fp.newPw.value;
-  const checks = {
-    length: pw.length >= 8,
-    upper: /[A-Z]/.test(pw),
-    number: /\d/.test(pw),
-    special: /[!@#$%^&*(),.?":{}|<>_\-]/.test(pw),
-  };
-
-  this.fp.pwReqs.forEach(el => {
-    const req = el.dataset.req;
-    el.classList.toggle('met', checks[req]);
-  });
-
-  const metCount = Object.values(checks).filter(Boolean).length;
-  if (!pw) {
-    this.fp.pwFill.className = 'pw-strength-fill';
-    this.fp.pwLabel.textContent = '';
-  } else if (metCount <= 1) {
-    this.fp.pwFill.className = 'pw-strength-fill weak';
-    this.fp.pwLabel.textContent = 'Weak';
-  } else if (metCount <= 2) {
-    this.fp.pwFill.className = 'pw-strength-fill medium';
-    this.fp.pwLabel.textContent = 'Medium';
-  } else if (metCount <= 3) {
-    this.fp.pwFill.className = 'pw-strength-fill strong';
-    this.fp.pwLabel.textContent = 'Strong';
-  } else {
-    this.fp.pwFill.className = 'pw-strength-fill very-strong';
-    this.fp.pwLabel.textContent = 'Very Strong';
-  }
+  // simplified — visual cue only
 };
 
 Thoughtify.prototype.toggleFpPassword = function() {
@@ -1341,16 +1325,12 @@ Thoughtify.prototype.handleFpReset = async function() {
     this.fp.pwError.textContent = 'Please fill in both fields.';
     return;
   }
-  if (newPw.length < 8) {
-    this.fp.pwError.textContent = 'Password must be at least 8 characters.';
+  if (newPw.length < 6) {
+    this.fp.pwError.textContent = 'Password must be at least 6 characters.';
     return;
   }
   if (newPw !== confirmPw) {
     this.fp.pwError.textContent = 'Passwords do not match.';
-    return;
-  }
-  if (!/[A-Z]/.test(newPw) || !/\d/.test(newPw) || !/[!@#$%^&*(),.?":{}|<>_\-]/.test(newPw)) {
-    this.fp.pwError.textContent = 'Password must contain uppercase, number, and special character.';
     return;
   }
 
