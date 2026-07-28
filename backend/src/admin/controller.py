@@ -77,11 +77,10 @@ def get_dashboard_stats(db: Session):
     total_comments = db.query(func.count(CommentModel.id)).scalar()
 
     five_mins_ago = now - timedelta(minutes=5)
-    non_admin = (UserModel.role != "ADMIN") | (UserModel.role.is_(None))
 
     online_users = (
         db.query(func.count(UserModel.id))
-        .filter(UserModel.last_seen >= five_mins_ago, non_admin)
+        .filter(UserModel.last_seen >= five_mins_ago)
         .scalar()
     )
 
@@ -89,7 +88,7 @@ def get_dashboard_stats(db: Session):
     start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
     active_today = (
         db.query(func.count(UserModel.id))
-        .filter(UserModel.last_seen >= start_of_day, non_admin)
+        .filter(UserModel.last_seen >= start_of_day)
         .scalar()
     )
 
@@ -97,7 +96,7 @@ def get_dashboard_stats(db: Session):
     start_of_week = start_of_day - timedelta(days=now.weekday())
     active_week = (
         db.query(func.count(UserModel.id))
-        .filter(UserModel.last_seen >= start_of_week, non_admin)
+        .filter(UserModel.last_seen >= start_of_week)
         .scalar()
     )
 
@@ -105,7 +104,7 @@ def get_dashboard_stats(db: Session):
     start_of_month = start_of_day.replace(day=1)
     active_month = (
         db.query(func.count(UserModel.id))
-        .filter(UserModel.last_seen >= start_of_month, non_admin)
+        .filter(UserModel.last_seen >= start_of_month)
         .scalar()
     )
 
@@ -177,9 +176,8 @@ def get_dashboard_stats(db: Session):
 
 def _active_users_query(db: Session, since: datetime):
     """Base query for active users with a given lookback window."""
-    non_admin = (UserModel.role != "ADMIN") | (UserModel.role.is_(None))
     return db.query(UserModel).filter(
-        UserModel.last_seen >= since, non_admin
+        UserModel.last_seen >= since
     )
 
 
