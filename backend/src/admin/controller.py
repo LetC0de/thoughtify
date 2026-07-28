@@ -1,13 +1,13 @@
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status, Depends, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
 from pwdlib import PasswordHash
+from jwt.exceptions import InvalidTokenError
 import jwt
 
 from src.utils.db import get_db
 from src.utils.settings import settings
-from src.utils.helper import is_authenticated
 from src.user.model import UserModel
 from src.thoughts.model import thought_model, CommentModel, LikeModel
 
@@ -16,15 +16,32 @@ password_hash = PasswordHash.recommended()
 
 # ── Auth ──
 
+def _admin_auth(request: Request, db: Session = Depends(get_db)):
+    """Verify admin token without updating last_seen.
+    Only the public website heartbeat should update last_seen,
+    so admin panel activity doesn't fake "online" counts.
+    """
+    try:
+        token = request.headers.get("authorization")
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found")
+        token = token.split(" ")[-1]
+        data = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
+        user_id = data.get("_id")
+        user = db.query(UserModel).filter(UserModel.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        if user.role != "ADMIN":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        return user
+    except InvalidTokenError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token")
+
+
 def require_admin(
-    user=Depends(is_authenticated),
+    user=Depends(_admin_auth),
 ):
-    """Verify the authenticated user has ADMIN role."""
-    if user.role != "ADMIN":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required",
-        )
+    """Verify the authenticated user has ADMIN role (no last_seen update)."""
     return user
 
 
