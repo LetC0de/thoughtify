@@ -35,7 +35,7 @@ async def register_user(body: UserSchema, db: Session, bg_task: BackgroundTasks)
             detail="Email not verified. Please verify your email with OTP first.",
         )
 
-    is_username_exists = db.query(UserModel).filter(UserModel.username == body.username).first()
+    is_username_exists = db.query(UserModel).filter(UserModel.username.ilike(body.username)).first()
 
     if is_username_exists:
         raise HTTPException(status_code=400, detail="Username already exists")
@@ -66,7 +66,7 @@ async def register_user(body: UserSchema, db: Session, bg_task: BackgroundTasks)
 
 def login_user(body:UserLoginSchema, db:Session):
 
-    user = db.query(UserModel).filter(UserModel.username == body.username).first()
+    user = db.query(UserModel).filter(UserModel.username.ilike(body.username)).first()
 
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
