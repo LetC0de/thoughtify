@@ -1,7 +1,25 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api, formatDate } from '../lib'
 
+const RANGE_LABELS = {
+  now: 'Online Now',
+  today: 'Active Today',
+  week: 'Active This Week',
+  month: 'Active This Month',
+}
+
+const RANGE_DESCS = {
+  now: 'Users active in the last 5 minutes',
+  today: 'Users active since midnight',
+  week: 'Users active since Monday',
+  month: 'Users active since the 1st',
+}
+
 export default function ActiveUsersPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const range = searchParams.get('range') || 'now'
+
   const [users, setUsers] = useState([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -12,7 +30,7 @@ export default function ActiveUsersPage() {
   const fetch = useCallback(async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ page, limit, search })
+      const params = new URLSearchParams({ page, limit, search, range })
       const data = await api(`/admin/users/active?${params}`)
       setUsers(data.users)
       setTotal(data.total)
@@ -21,23 +39,46 @@ export default function ActiveUsersPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, search])
+  }, [page, search, range])
 
   useEffect(() => { fetch() }, [fetch])
 
   const totalPages = Math.ceil(total / limit)
 
+  const switchRange = (r) => {
+    setSearchParams({ range: r })
+    setPage(1)
+    setSearch('')
+  }
+
+  const ranges = ['now', 'today', 'week', 'month']
+
   return (
     <div className="page">
       <div className="page-header">
-        <h2 className="page-title">Active Users</h2>
-        <span className="page-count">{total} active now</span>
+        <h2 className="page-title">{RANGE_LABELS[range]}</h2>
+        <span className="page-count">{total} users</span>
       </div>
+
+      {/* ─── Time-range tabs ─── */}
+      <div className="range-tabs">
+        {ranges.map((r) => (
+          <button
+            key={r}
+            className={`range-tab ${r === range ? 'active' : ''}`}
+            onClick={() => switchRange(r)}
+          >
+            {RANGE_LABELS[r]}
+          </button>
+        ))}
+      </div>
+
+      <p className="range-desc">{RANGE_DESCS[range]}</p>
 
       <input
         className="search-input"
         type="text"
-        placeholder="Search active users…"
+        placeholder={`Search ${RANGE_LABELS[range].toLowerCase()}…`}
         value={search}
         onChange={(e) => { setSearch(e.target.value); setPage(1) }}
       />
@@ -61,7 +102,7 @@ export default function ActiveUsersPage() {
               <tbody>
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="empty-row">No active users</td>
+                    <td colSpan={5} className="empty-row">No {RANGE_LABELS[range].toLowerCase()}</td>
                   </tr>
                 )}
                 {users.map((u) => (

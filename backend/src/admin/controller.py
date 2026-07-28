@@ -71,17 +71,41 @@ def get_admin_profile(admin: UserModel):
 # ── Dashboard ──
 
 def get_dashboard_stats(db: Session):
+    now = datetime.now(timezone.utc)
     total_users = db.query(func.count(UserModel.id)).scalar()
     total_posts = db.query(func.count(thought_model.id)).scalar()
     total_comments = db.query(func.count(CommentModel.id)).scalar()
 
-    five_mins_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
+    five_mins_ago = now - timedelta(minutes=5)
+    non_admin = (UserModel.role != "ADMIN") | (UserModel.role.is_(None))
+
     online_users = (
         db.query(func.count(UserModel.id))
-        .filter(
-            UserModel.last_seen >= five_mins_ago,
-            (UserModel.role != "ADMIN") | (UserModel.role.is_(None)),
-        )
+        .filter(UserModel.last_seen >= five_mins_ago, non_admin)
+        .scalar()
+    )
+
+    # ── Time-range active counts ──
+    start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    active_today = (
+        db.query(func.count(UserModel.id))
+        .filter(UserModel.last_seen >= start_of_day, non_admin)
+        .scalar()
+    )
+
+    # Start of current week (Monday)
+    start_of_week = start_of_day - timedelta(days=now.weekday())
+    active_week = (
+        db.query(func.count(UserModel.id))
+        .filter(UserModel.last_seen >= start_of_week, non_admin)
+        .scalar()
+    )
+
+    # Start of current month
+    start_of_month = start_of_day.replace(day=1)
+    active_month = (
+        db.query(func.count(UserModel.id))
+        .filter(UserModel.last_seen >= start_of_month, non_admin)
         .scalar()
     )
 
@@ -112,6 +136,9 @@ def get_dashboard_stats(db: Session):
             "total_posts": total_posts,
             "total_comments": total_comments,
             "online_users": online_users,
+            "active_today": active_today,
+            "active_week": active_week,
+            "active_month": active_month,
         },
         "recent_users": [
             {
@@ -148,15 +175,27 @@ def get_dashboard_stats(db: Session):
 
 # ── Active Users ──
 
-def get_active_users(db: Session, search: str, page: int, limit: int):
-    offset = (page - 1) * limit
-    five_mins_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
-    # `role` may be NULL for users who existed before the migration that added it.
-    # Explicitly treat NULL as non-ADMIN so those users aren't silently excluded.
-    query = db.query(UserModel).filter(
-        UserModel.last_seen >= five_mins_ago,
-        (UserModel.role != "ADMIN") | (UserModel.role.is_(None)),
+def _active_users_query(db: Session, since: datetime):
+    """Base query for active users with a given lookback window."""
+    non_admin = (UserModel.role != "ADMIN") | (UserModel.role.is_(None))
+    return db.query(UserModel).filter(
+        UserModel.last_seen >= since, non_admin
     )
+
+
+def get_active_users(db: Session, search: str, page: int, limit: int, range: str = "now"):
+    now = datetime.now(timezone.utc)
+
+    if range == "today":
+        since = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif range == "week":
+        since = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=now.weekday())
+    elif range == "month":
+        since = now.replace(hour=0, minute=0, second=0, microsecond=0).replace(day=1)
+    else:
+        since = now - timedelta(minutes=5)
+
+    query = _active_users_query(db, since)
 
     if search:
         like = f"%{search}%"
@@ -167,6 +206,7 @@ def get_active_users(db: Session, search: str, page: int, limit: int):
         )
 
     total = query.count()
+    offset = (page - 1) * limit
     users = query.order_by(UserModel.last_seen.desc()).offset(offset).limit(limit).all()
 
     return {
@@ -184,6 +224,7 @@ def get_active_users(db: Session, search: str, page: int, limit: int):
         "total": total,
         "page": page,
         "limit": limit,
+        "range": range,
     }
 
 

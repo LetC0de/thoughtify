@@ -37,10 +37,11 @@ def list_active_users(
     search: str = Query("", max_length=100),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
+    range: str = Query("now", pattern="^(now|today|week|month)$"),
     admin=Depends(controller.require_admin),
     db: Session = Depends(get_db),
 ):
-    return controller.get_active_users(db, search, page, limit)
+    return controller.get_active_users(db, search, page, limit, range)
 
 
 @admin_router.get("/users")

@@ -26,13 +26,20 @@ export default function DashboardPage() {
     { label: 'Users', value: stats.total_users, icon: '👥', to: '/users' },
     { label: 'Thoughts', value: stats.total_posts, icon: '📝', to: '/thoughts' },
     { label: 'Comments', value: stats.total_comments, icon: '💬', to: '/comments' },
-    { label: 'Active Users', value: stats.online_users, icon: '🟢', to: '/active-users' },
+  ]
+
+  const activeCards = [
+    { label: 'Online Now', value: stats.online_users, icon: '🟢', desc: 'Last 5 minutes', to: '/active-users?range=now' },
+    { label: 'Active Today', value: stats.active_today, icon: '☀️', desc: 'Since midnight', to: '/active-users?range=today' },
+    { label: 'Active This Week', value: stats.active_week, icon: '📅', desc: 'Since Monday', to: '/active-users?range=week' },
+    { label: 'Active This Month', value: stats.active_month, icon: '🌙', desc: 'Since 1st', to: '/active-users?range=month' },
   ]
 
   return (
     <div className="page">
       <h2 className="page-title">Dashboard</h2>
 
+      {/* Global stat cards */}
       <div className="stat-grid">
         {cards.map((c) => (
           <button key={c.label} className="stat-card stat-card-clickable" onClick={() => navigate(c.to)}>
@@ -45,6 +52,30 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* Active Users section — inline heading and cards */}
+      <div className="active-section">
+        <div className="active-section-header">
+          <h3>Active Users</h3>
+        </div>
+        <div className="active-grid">
+          {activeCards.map((c) => (
+            <button
+              key={c.label}
+              className="active-card"
+              onClick={() => navigate(c.to)}
+            >
+              <div className="active-card-row">
+                <span className="active-card-value">{c.value}</span>
+                <span className="active-card-icon">{c.icon}</span>
+              </div>
+              <div className="active-card-label">{c.label}</div>
+              <div className="active-card-desc">{c.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent activity grid */}
       <div className="activity-grid">
         <div className="activity-section">
           <h3>Recent Users</h3>
