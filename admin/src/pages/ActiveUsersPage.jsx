@@ -16,6 +16,10 @@ const RANGE_DESCS = {
   month: 'Users active since the 1st',
 }
 
+function PulseDot({ small }) {
+  return <span className={`pulse-dot ${small ? 'pulse-dot-sm' : ''}`} />
+}
+
 export default function ActiveUsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const range = searchParams.get('range') || 'now'
@@ -56,7 +60,10 @@ export default function ActiveUsersPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h2 className="page-title">{RANGE_LABELS[range]}</h2>
+        <h2 className="page-title">
+          {RANGE_LABELS[range]}
+          {range === 'now' && total > 0 && <PulseDot />}
+        </h2>
         <span className="page-count">{total} users</span>
       </div>
 
@@ -68,7 +75,7 @@ export default function ActiveUsersPage() {
             className={`range-tab ${r === range ? 'active' : ''}`}
             onClick={() => switchRange(r)}
           >
-            {RANGE_LABELS[r]}
+            {RANGE_LABELS[r]} {r === 'now' && total > 0 && <span className="range-tab-dot" />}
           </button>
         ))}
       </div>

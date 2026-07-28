@@ -929,6 +929,104 @@ table { border-collapse: collapse; width: 100%; }
   color: var(--text);
 }
 .active-card-icon { font-size: 1.2rem; opacity: 0.7; }
+
+/* ── Pulse dot ── */
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-left: 6px;
+  vertical-align: middle;
+  position: relative;
+  animation: pulse-anim 1.8s ease-in-out infinite;
+}
+.pulse-dot::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: var(--success);
+  opacity: 0.3;
+  animation: pulse-ring 1.8s ease-in-out infinite;
+}
+.pulse-dot-sm {
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.pulse-dot-sm::before { display: none; }
+
+@keyframes pulse-anim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.15); }
+}
+@keyframes pulse-ring {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.05; transform: scale(1.6); }
+}
+
+/* ── Live badge ── */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Active card live state ── */
+.active-card-live {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(45,143,92,0.03) 100%);
+}
+.active-card-live:hover {
+  border-color: var(--success) !important;
+  box-shadow: 0 0 0 2px rgba(45,143,92,0.12), var(--shadow-md) !important;
+}
+
+/* ── Animated number ── */
+.animated-num {
+  display: inline-block;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.animated-num-up {
+  animation: bumpUp 0.35s ease-out;
+  color: var(--success);
+}
+.animated-num-down {
+  animation: bumpDown 0.35s ease-out;
+  color: var(--danger);
+}
+@keyframes bumpUp {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+@keyframes bumpDown {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+
+/* ── Range tab dot ── */
+.range-tab .range-tab-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-left: 5px;
+  vertical-align: middle;
+  animation: pulse-anim 1.8s ease-in-out infinite;
+}
 .active-card-label {
   font-size: 0.78rem;
   font-weight: 600;
