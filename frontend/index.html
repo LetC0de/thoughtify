@@ -43,7 +43,7 @@
         </a>
 
         <div class="landing-nav-actions" id="landingNavActions">
-          <button class="btn btn-secondary btn-sm" id="landingLoginBtn">Sign In</button>
+          <button class="btn btn-secondary btn-sm" id="landingLoginBtn">Log In</button>
           <button class="btn btn-primary btn-sm" id="landingSignupBtn">Get Started</button>
           <div class="landing-user-signedin" id="landingUserSignedin" style="display: none;">
             <div class="user-avatar user-avatar--sm" id="landingUserAvatar">A</div>
@@ -193,7 +193,7 @@
         </a>
 
         <div class="auth-tabs" role="tablist">
-          <button class="auth-tab active" data-tab="login" role="tab" aria-selected="true" id="tabLogin">Sign In</button>
+          <button class="auth-tab active" data-tab="login" role="tab" aria-selected="true" id="tabLogin">Log In</button>
           <button class="auth-tab" data-tab="register" role="tab" aria-selected="false" id="tabRegister">Create Account</button>
         </div>
 
@@ -205,16 +205,21 @@
           </div>
           <div class="form-group">
             <label for="loginPassword" class="form-label">Password</label>
-            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+            <div class="pw-input-wrap">
+              <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+              <button type="button" class="btn-pw-eye" id="loginPwToggle" aria-label="Toggle password visibility" tabindex="-1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
           <div class="auth-error" id="loginError" role="alert"></div>
           <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
             <span class="btn-spinner" id="loginSpinner" style="display: none;"></span>
-            <span id="loginBtnText">Sign In</span>
+            <span id="loginBtnText">Log In</span>
           </button>
           <p class="auth-alt">
-            Don't have an account?
-            <button type="button" class="btn-link" data-switch="register">Create one</button>
+            No account yet?
+            <button type="button" class="btn-link" data-switch="register">Register</button>
           </p>
           <p class="auth-alt" style="margin-top: 0.15rem;">
             <button type="button" class="btn-link" data-switch="forgot-password">Forgot password?</button>
@@ -264,7 +269,7 @@
           </button>
           <p class="auth-alt">
             Already have an account?
-            <button type="button" class="btn-link" data-switch="login">Sign in</button>
+            <button type="button" class="btn-link" data-switch="login">Log In</button>
           </p>
         </form>
       </div>

@@ -2094,7 +2094,37 @@ body::after {
   margin-bottom: 1rem;
 }
 
-/* ── Password row (with toggle) ── */
+/* ── Password input with eye inside ── */
+.pw-input-wrap {
+  position: relative;
+  width: 100%;
+}
+.pw-input-wrap .form-input {
+  width: 100%;
+  padding-right: 2.8rem;
+}
+.btn-pw-eye {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s var(--ease-out);
+  padding: 0;
+  line-height: 1;
+}
+.btn-pw-eye:hover { color: var(--text-primary); background: var(--bg-elevated); }
+
+/* ── Forgot password's password row ── */
 .password-row {
   display: flex;
   gap: 0.5rem;
