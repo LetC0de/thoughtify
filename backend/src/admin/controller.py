@@ -78,7 +78,10 @@ def get_dashboard_stats(db: Session):
     five_mins_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
     online_users = (
         db.query(func.count(UserModel.id))
-        .filter(UserModel.last_seen >= five_mins_ago, UserModel.role != "ADMIN")
+        .filter(
+            UserModel.last_seen >= five_mins_ago,
+            (UserModel.role != "ADMIN") | (UserModel.role.is_(None)),
+        )
         .scalar()
     )
 
@@ -148,7 +151,12 @@ def get_dashboard_stats(db: Session):
 def get_active_users(db: Session, search: str, page: int, limit: int):
     offset = (page - 1) * limit
     five_mins_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
-    query = db.query(UserModel).filter(UserModel.last_seen >= five_mins_ago, UserModel.role != "ADMIN")
+    # `role` may be NULL for users who existed before the migration that added it.
+    # Explicitly treat NULL as non-ADMIN so those users aren't silently excluded.
+    query = db.query(UserModel).filter(
+        UserModel.last_seen >= five_mins_ago,
+        (UserModel.role != "ADMIN") | (UserModel.role.is_(None)),
+    )
 
     if search:
         like = f"%{search}%"
@@ -168,7 +176,7 @@ def get_active_users(db: Session, search: str, page: int, limit: int):
                 "username": u.username,
                 "email": u.email or "—",
                 "name": u.name,
-                "role": u.role,
+                "role": u.role or "USER",
                 "last_seen": str(u.last_seen) if u.last_seen else None,
             }
             for u in users
