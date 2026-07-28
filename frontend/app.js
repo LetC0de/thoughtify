@@ -21,6 +21,7 @@ class Thoughtify {
     this.isSubmitting = false;
     this.currentUser = null;
     this.isFetching = false;
+    this._heartbeatInterval = null;
 
     this.init();
   }
@@ -282,6 +283,7 @@ class Thoughtify {
 
     // Load my thoughts
     this.fetchMyThoughts();
+    this.startHeartbeat();
   }
 
   /* ─── Bottom Tab Navigation ─── */
@@ -346,6 +348,7 @@ class Thoughtify {
       this.currentUser = user;
       this.saveUser(user);
       this.updateLandingNav(user);
+      this.startHeartbeat();
       this.loadingOverlay.classList.add('hidden');
     } catch {
       this.clearAuth();
@@ -506,6 +509,7 @@ class Thoughtify {
   }
 
   logout() {
+    this.stopHeartbeat();
     this.clearAuth();
     this.showLanding();
     this.updateLandingNav(null);
@@ -1395,6 +1399,32 @@ Thoughtify.prototype.toggleRegPassword = function() {
   this.regPwToggle.innerHTML = isPassword
     ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
     : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+};
+
+/* ─── Heartbeat — keeps last_seen fresh for admin active-users panel ─── */
+
+Thoughtify.prototype.startHeartbeat = function() {
+  this.stopHeartbeat();
+  // Ping the server every 2 minutes so last_seen stays inside the 5-min window
+  this._heartbeatInterval = setInterval(async () => {
+    try {
+      const token = this.getToken();
+      if (!token) { this.stopHeartbeat(); return; }
+      await fetch(`${this.apiBaseUser}/is_auth`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch {
+      // Silently ignore transient network/server errors —
+      // the user shouldn't drop off the active list for one failed ping.
+    }
+  }, 120000);
+};
+
+Thoughtify.prototype.stopHeartbeat = function() {
+  if (this._heartbeatInterval) {
+    clearInterval(this._heartbeatInterval);
+    this._heartbeatInterval = null;
+  }
 };
 
 /* ─── Boot ─── */

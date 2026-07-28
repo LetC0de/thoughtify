@@ -10,11 +10,13 @@ class PostPage {
     this.apiThought = `${base}/thought`;
     this.tokenKey = 'thoughtify_token';
     this.userKey = 'thoughtify_user';
+    this.apiBase = base;
 
     this.thought = null;
     this.currentUser = null;
     this.comments = [];
     this.replyingTo = null; // { id, name }
+    this._heartbeatInterval = null;
 
     this.init();
   }
@@ -492,6 +494,30 @@ class PostPage {
     }, 3500);
   }
 
+  /* ─── Heartbeat — keeps last_seen fresh for admin active-users panel ─── */
+
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this._heartbeatInterval = setInterval(async () => {
+      try {
+        const token = this.getToken();
+        if (!token) { this.stopHeartbeat(); return; }
+        await fetch(`${this.apiBase}/user/is_auth`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch {
+        // Silently ignore transient failures
+      }
+    }, 120000);
+  }
+
+  stopHeartbeat() {
+    if (this._heartbeatInterval) {
+      clearInterval(this._heartbeatInterval);
+      this._heartbeatInterval = null;
+    }
+  }
+
   /* ─── Utilities ─── */
 
   escapeHtml(str) {
@@ -501,4 +527,5 @@ class PostPage {
   }
 }
 
-new PostPage();
+const postPage = new PostPage();
+postPage.startHeartbeat();
