@@ -160,7 +160,15 @@ class Thoughtify {
     // Landing nav buttons → open auth
     this.landingLoginBtn.addEventListener('click', () => this.openAuth('login'));
     this.landingSignupBtn.addEventListener('click', () => this.openAuth('register'));
-    this.heroStartBtn.addEventListener('click', () => this.openAuth('register'));
+    this.heroStartBtn.addEventListener('click', () => {
+      if (this.currentUser) {
+        this.showDashboard();
+        this.formWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        this.titleInput.focus();
+      } else {
+        this.openAuth('register');
+      }
+    });
 
     // Hero explore → scroll to public feed
     this.heroExploreBtn.addEventListener('click', () => {
