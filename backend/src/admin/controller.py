@@ -46,7 +46,7 @@ def require_admin(
 
 
 def login_admin(email: str, password: str, db: Session):
-    user = db.query(UserModel).filter(UserModel.email == email).first()
+    user = db.query(UserModel).filter(UserModel.email == email.strip().lower()).first()
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
