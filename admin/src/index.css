@@ -382,6 +382,40 @@ table { border-collapse: collapse; width: 100%; }
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-bg);
 }
+
+/* ── Password reveal toggle ── */
+.pw-field .pw-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pw-field .pw-wrap input {
+  padding-right: 2.6rem;
+}
+.pw-field .pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.pw-field .pw-toggle:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+.pw-field .pw-toggle:active {
+  background: rgba(0,0,0,0.06);
+}
 .btn-primary {
   width: 100%;
   padding: 0.7rem;
