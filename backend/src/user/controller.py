@@ -19,6 +19,9 @@ def get_password_hash(password):
 
 async def register_user(body: UserSchema, db: Session, bg_task: BackgroundTasks):
 
+    # Normalize email to lowercase (OTP flow already lowercases)
+    body.email = body.email.strip().lower()
+
     # Check OTP verification
     verification = (
         db.query(EmailVerification)
