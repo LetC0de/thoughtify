@@ -39,3 +39,11 @@ app.include_router(comment_router)
 app.include_router(otp_router)
 app.include_router(forgot_password_router)
 app.include_router(admin_router)
+
+
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy"
+    }
