@@ -27,3 +27,5 @@ def verify_reset_otp(body: VerifyResetOTPRequest, db: Session = Depends(get_db))
 @forgot_password_router.post("/reset-password", response_model=ResetPasswordResponse, status_code=status.HTTP_200_OK)
 def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
     return controller.reset_password(body.reset_token.strip(), body.new_password, db)
+
+
