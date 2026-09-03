@@ -19,10 +19,6 @@ app = FastAPI(title="Thoughtify: a thought sharing platform")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://127.0.0.1:5500", "http://localhost:5500",
-        "http://127.0.0.1:8000", "http://localhost:3000", "http://127.0.0.1:3000",
-        "http://localhost:5173", "http://127.0.0.1:5173",
-        "null",
         settings.FE_DOMAIN,
         settings.FE_DOMAIN_WWW,
         settings.ADMIN_DOMAIN,
